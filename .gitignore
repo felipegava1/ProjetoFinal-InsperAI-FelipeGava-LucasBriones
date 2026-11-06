@@ -1,0 +1,7 @@
+__pycache__/
+.ipynb_checkpoints/
+
+# dados ficam fora do repositório (ver README)
+*.zip
+dataverse_files/
+datasets/
