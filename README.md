@@ -55,3 +55,36 @@ df = load_labels()  # DataFrame com caminhos absolutos
 ```
 
 O `notebook.ipynb` já carrega a base e monta os datasets do TensorFlow na primeira seção.
+O carregamento em `tf.data` fica em `pipeline.py`, o mesmo código usado no Kaggle.
+
+## Treinando no Kaggle
+
+O professor é treinado no Kaggle, que tem GPU grátis (~30 h/semana). As imagens de
+treino/validação vêm do dataset público
+[andrewmvd/isic-2019](https://www.kaggle.com/datasets/andrewmvd/isic-2019); o resto sobe como
+dois datasets privados.
+
+1. **Conta**: crie uma conta no Kaggle e verifique o telefone (Settings → Phone verification),
+   necessário para usar GPU e Internet nos notebooks.
+2. **Pacotes**: com a base local pronta, rode
+   ```
+   python kaggle_package.py SEU_USUARIO_KAGGLE
+   ```
+   Isso cria em `~/datasets/kaggle/`:
+   - `lesoes-pele-meta/`: `labels.csv`, `md5.csv` e o código (`prepare_data.py`, `pipeline.py`)
+   - `lesoes-pele-extra/`: imagens de `test/` e `unlabeled/` (~3,8 GB)
+3. **Upload** (os datasets são criados como privados):
+   ```
+   pip install kaggle
+   kaggle datasets create -p ~/datasets/kaggle/lesoes-pele-meta
+   kaggle datasets create -p ~/datasets/kaggle/lesoes-pele-extra --dir-mode zip
+   ```
+   O `kaggle` precisa do token da API: Kaggle → Settings → API → *Create New Token*, e salve o
+   `kaggle.json` em `C:\Users\<usuario>\.kaggle\`. Como alternativa, dá para subir as pastas pelo
+   site (Datasets → New Dataset).
+4. **Notebook**: no Kaggle, Create → New Notebook → File → *Import Notebook* →
+   `kaggle_professor.ipynb`. Em Settings, escolha *Accelerator: GPU T4 x2* e ligue *Internet*; em
+   *Add Input*, anexe `andrewmvd/isic-2019`, `lesoes-pele-meta` e `lesoes-pele-extra`.
+   A seção Dados confere se todas as imagens foram encontradas e se são idênticas às locais (md5).
+5. **Mudou o código?** Se `prepare_data.py` ou `pipeline.py` mudarem, rode o passo 2 de novo e
+   publique uma nova versão: `kaggle datasets version -p ~/datasets/kaggle/lesoes-pele-meta -m "descrição"`.
