@@ -1,51 +1,57 @@
 # Projeto Final – InsperAI (Felipe Gava, Lucas Briones)
 
-Classificação de lesões de pele com o dataset HAM10000 / ISIC 2018 Task 3.
+Classificação de lesões de pele com uma CNN professor-aluno, usando o ISIC 2019
+(HAM10000 + BCN_20000 + MSK) para treino e o ISIC 2018 Task 3 para teste.
 
 ## Preparando a base de dados
 
-As imagens (~3 GB) ficam só no seu PC, fora do repositório e fora do OneDrive.
+As imagens (~17 GB) ficam só no seu PC, fora do repositório e fora do OneDrive.
 
-1. Baixe o `dataverse_files.zip` do Harvard Dataverse:
-   https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/DBW86T
-   (botão *Access Dataset* → *Download ZIP*).
-2. Instale as dependências: `pip install pandas tensorflow`
-3. Rode, na pasta do repositório:
+1. Baixe as duas fontes:
+   - **HAM10000**: `dataverse_files.zip` em
+     https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/DBW86T
+     (*Access Dataset* → *Download ZIP*).
+   - **ISIC 2019**: em https://challenge.isic-archive.com/data/#2019, os arquivos
+     `ISIC_2019_Training_Input.zip`, `ISIC_2019_Training_GroundTruth.csv`,
+     `ISIC_2019_Training_Metadata.csv`, `ISIC_2019_Test_Input.zip` e
+     `ISIC_2019_Test_Metadata.csv`, todos na mesma pasta (os zips podem estar extraídos ou não).
+2. Instale as dependências: `pip install pandas tensorflow pillow`
+3. Na pasta do repositório, rode:
    ```
-   python organize_dataset.py CAMINHO/PARA/dataverse_files.zip
+   python prepare_data.py CAMINHO/dataverse_files.zip PASTA_DO_ISIC2019
    ```
-   Também aceita a pasta onde o zip já foi extraído. Por padrão a base vai para
-   `~/datasets/ham10000` (no Windows, `C:\Users\<usuario>\datasets\ham10000`). Para outro
-   lugar, passe o destino como segundo argumento e defina a variável de ambiente
-   `HAM10000_DIR` com esse caminho, para que o `load_labels()` o encontre.
-4. Depois de pronto, o `dataverse_files.zip` pode ser apagado.
+   O primeiro argumento também aceita a pasta onde o `dataverse_files.zip` foi extraído.
+   A base vai para `~/datasets/lesoes_pele` (no Windows, `C:\Users\<usuario>\datasets\lesoes_pele`).
+   Para outro lugar, passe o destino como terceiro argumento e defina a variável de ambiente
+   `LESOES_DIR` com esse caminho, para que o notebook a encontre.
+4. Depois de pronto, os arquivos baixados podem ser apagados.
 
 ### Estrutura gerada
 
 ```
-ham10000/
-├── train/<dx>/ISIC_xxxxxxx.jpg   8502 imagens (HAM10000 menos a validação)
-├── val/<dx>/ISIC_xxxxxxx.jpg     1513 imagens (~15% das lesões, estratificado por classe)
-├── test/<dx>/ISIC_xxxxxxx.jpg    1511 imagens (ISIC 2018 Task 3 Test)
-├── masks/                        máscaras de segmentação (só train/val)
-└── labels.csv                    metadados + split + caminhos relativos
+lesoes_pele/
+├── train/<dx>/   21486 imagens  ISIC 2019, ~85% das lesões
+├── val/<dx>/      3845 imagens  ISIC 2019, ~15% das lesões
+├── test/          1511 imagens  ISIC 2018 Task 3, rótulo no labels.csv
+├── unlabeled/     6726 imagens  resto do teste do ISIC 2019, sem rótulo
+├── masks/                       máscaras de segmentação (só imagens do HAM10000)
+└── labels.csv                   uma linha por imagem
 ```
 
-`<dx>` é a classe: `akiec`, `bcc`, `bkl`, `df`, `mel`, `nv`, `vasc`. A coluna `malignant` do
-`labels.csv` vale 1 para `mel`, `bcc` e `akiec`.
-
-A validação é sorteada por `lesion_id` (semente fixa), então fotos da mesma lesão nunca ficam
-em train e val ao mesmo tempo. A imagem `ISIC_0035068` está no gabarito de teste mas não vem
-no zip, por isso é descartada.
+- **Classes (`dx`)**: `ak`, `bcc`, `bkl`, `df`, `mel`, `nv`, `scc`, `vasc`.
+- **Teste**: o ISIC 2018 só tem as 7 classes do HAM10000, em que `akiec` junta `ak` e `scc`. Por
+  isso o rótulo do teste está em `dx_ham`; o treino também tem `dx_ham` para comparação.
+- **Validação**: sorteada por `lesion_id` com semente fixa, então fotos da mesma lesão nunca
+  ficam em train e val ao mesmo tempo, e todos que rodarem o script recebem a mesma divisão.
+- **`labels.csv`** traz também `source` (HAM, BCN, MSK), `malignant`, idade, sexo, região do corpo
+  (`site`, nas 8 regiões do ISIC 2019) e, só para o HAM, `dx_type` e `dataset`.
+- A imagem `ISIC_0035068` está no gabarito do ISIC 2018 mas não vem no zip, por isso é descartada.
 
 ### Usando no notebook
 
 ```python
-from organize_dataset import load_labels, DEFAULT_DIR
-import keras
-
+from prepare_data import load_labels, CLASSES
 df = load_labels()  # DataFrame com caminhos absolutos
-
-train_ds = keras.utils.image_dataset_from_directory(
-    DEFAULT_DIR / "train", image_size=(224, 224), batch_size=32)
 ```
+
+O `notebook.ipynb` já carrega a base e monta os datasets do TensorFlow na primeira seção.
