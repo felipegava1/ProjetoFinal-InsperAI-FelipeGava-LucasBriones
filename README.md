@@ -88,3 +88,33 @@ dois datasets privados.
    A seção Dados confere se todas as imagens foram encontradas e se são idênticas às locais (md5).
 5. **Mudou o código?** Se `prepare_data.py` ou `pipeline.py` mudarem, rode o passo 2 de novo e
    publique uma nova versão: `kaggle datasets version -p ~/datasets/kaggle/lesoes-pele-meta -m "descrição"`.
+
+### Treinando o professor
+
+O `kaggle_professor.ipynb` treina um ou mais professores (`MODELS`, na seção Modelo professor),
+avalia no teste e exporta modelo e previsões. Use **Save Version → Save & Run All**, que roda em
+segundo plano (até 12 h por execução) e guarda tudo na aba Output.
+
+| Professor | Arquitetura | Tempo estimado (T4 x2) |
+|---|---|---|
+| `effv2s` | EfficientNetV2-S, 384 px | ~2 h |
+| `effb4` | EfficientNet-B4, 380 px | ~3 h |
+| `effv2m` | EfficientNetV2-M, 384 px | ~4 h |
+| `convnext_s` | ConvNeXt-Small, 384 px | ~5 h |
+
+Roteiro sugerido:
+1. Rode com `MODELS = ["effv2s"]` (o padrão). Isso valida tudo de ponta a ponta e já dá o primeiro professor.
+2. Para o **ensemble**, rode novas versões com os outros professores (ex.: `MODELS = ["convnext_s"]`)
+   e, em *Add Input*, anexe o **output das versões anteriores** (Your Work → Notebooks). A seção
+   Teste encontra todos os `probs.npz`, avalia cada professor e a média deles, e escolhe o melhor
+   pela validação.
+3. Se faltar memória na GPU (erro OOM), reduza o `batch` do professor em `BACKBONES`; se der erro
+   de `MirroredStrategy`, use `MULTI_GPU = False`.
+
+O output de cada versão traz `<professor>/melhor.keras` (modelo), `<professor>/probs.npz`
+(probabilidades com TTA de todos os splits), as curvas de treino, `resultados.csv` e
+`ensemble_probs.npz` (probabilidades do melhor, para a destilação do aluno).
+
+Para testar o notebook no PC antes de subir (poucas imagens, resolução baixa, uma época), rode-o
+com as variáveis de ambiente `SMOKE_TEST=1`, `KAGGLE_INPUT` (pasta com os três datasets),
+`KAGGLE_WORKING` e `CACHE_DIR`.

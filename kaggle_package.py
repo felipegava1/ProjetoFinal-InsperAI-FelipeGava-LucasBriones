@@ -1,6 +1,7 @@
 """Monta as duas pastas a subir como datasets privados no Kaggle.
 
-    lesoes-pele-meta/   labels.csv, md5.csv e o código (prepare_data.py, pipeline.py)
+    lesoes-pele-meta/   labels.csv, md5.csv, o código (prepare_data.py, pipeline.py) e o CSV
+                        com os diagnósticos de dermatologistas no teste (Tschandl et al., 2020)
     lesoes-pele-extra/  imagens de test/ e unlabeled/, que não têm cópia confiável no Kaggle
 
 As imagens de treino/validação vêm do dataset público andrewmvd/isic-2019; o md5.csv permite
@@ -23,6 +24,10 @@ from prepare_data import DEFAULT_DIR
 
 REPO = Path(__file__).resolve().parent
 CODE = ["prepare_data.py", "pipeline.py"]
+# diagnósticos de dermatologistas no teste do ISIC 2018 (Tschandl et al., 2020), para comparação
+READERS_CSV = Path(os.environ.get(
+    "READERS_CSV",
+    REPO.parent / "dataverse_files" / "ISIC2018_Task3_Test_NatureMedicine_AI_Interaction_Benefit.csv"))
 DATASETS = {
     "lesoes-pele-meta": "Lesões de pele - rótulos e splits",
     "lesoes-pele-extra": "Lesões de pele - teste e sem rótulo",
@@ -60,6 +65,10 @@ def package(user: str, out_dir: Path, data_dir: Path = DEFAULT_DIR) -> None:
     shutil.copyfile(data_dir / "labels.csv", meta / "labels.csv")
     for name in CODE:
         shutil.copyfile(REPO / name, meta / name)
+    if READERS_CSV.exists():
+        shutil.copyfile(READERS_CSV, meta / READERS_CSV.name)
+    else:
+        print(f"Aviso: {READERS_CSV} não encontrado; a comparação com dermatologistas fica de fora")
     md5_file = meta / "md5.csv"
     if not md5_file.exists():
         print(f"Calculando md5 de {len(df)} imagens...")
