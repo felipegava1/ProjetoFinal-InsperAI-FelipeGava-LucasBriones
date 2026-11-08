@@ -57,6 +57,19 @@ df = load_labels()  # DataFrame com caminhos absolutos
 O `notebook.ipynb` já carrega a base e monta os datasets do TensorFlow na primeira seção.
 O carregamento em `tf.data` fica em `pipeline.py`, o mesmo código usado no Kaggle.
 
+### Modelo treinado
+
+O professor treinado (EfficientNetV2-B0, 224 px) está em `modelos/professor_effv2b0/`:
+
+- `melhor.keras`: o modelo (`keras.models.load_model("modelos/professor_effv2b0/melhor.keras")`).
+  Entradas: `image` (224×224×3, 0–255, com Shades of Gray, ver `pipeline.py`) e `meta` (14 valores,
+  `pipeline.meta_features`). Saída: logits das 8 classes.
+- `probs.npz`: probabilidades do professor em todos os splits, `probs_fase1.npz` (baseline) e o
+  histórico de treino.
+
+Com esses arquivos, o notebook pula o treino (~7 h na CPU) e vai direto aos testes. Ele ainda
+precisa da base de dados no PC (passos acima), para as imagens e os rótulos.
+
 ## Treinando no Kaggle
 
 O professor é treinado no Kaggle, que tem GPU grátis (~30 h/semana). As imagens de
