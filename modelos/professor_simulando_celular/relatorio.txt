@@ -1,0 +1,39 @@
+                        modelo                     conjunto  imagens  melanomas  tau  limiar  acuracia  acuracia_balanceada  mel_sensibilidade  mel_precisao  mel_auc  maligno_auc  triagem_sensibilidade  triagem_especificidade
+                antes (Felipe) celular (PAD-UFES-20 + HIBA)     2643        117  0.5   0.028     0.315                0.303              0.222         0.068    0.593        0.845                  0.921                   0.491
+                antes (Felipe)                  pad_ufes_20     2298         52  0.5   0.028     0.317                0.362              0.250         0.037    0.644        0.850                  0.928                   0.484
+                antes (Felipe)                         hiba      345         65  0.5   0.028     0.304                0.279              0.200         0.406    0.643        0.792                  0.865                   0.525
+depois (B_dermatoscopia+fotos) celular (PAD-UFES-20 + HIBA)     2643        117  1.1   0.287     0.389                0.478              0.504         0.224    0.871        0.868                  0.966                   0.414
+depois (B_dermatoscopia+fotos)                  pad_ufes_20     2298         52  1.1   0.287     0.386                0.476              0.673         0.166    0.915        0.872                  0.971                   0.411
+depois (B_dermatoscopia+fotos)                         hiba      345         65  1.1   0.287     0.406                0.428              0.369         0.462    0.817        0.833                  0.926                   0.426
+
+=== antes (Felipe): celular, tau=0.5 ===
+              precision    recall  f1-score   support
+
+          ak      0.359     0.095     0.150       747
+         bcc      0.654     0.348     0.454       959
+         bkl      0.195     0.625     0.297       261
+          df      0.000     0.000     0.000        22
+         mel      0.068     0.222     0.104       117
+          nv      0.471     0.704     0.564       297
+         scc      0.244     0.125     0.165       240
+        vasc      0.000     0.000     0.000         0
+
+    accuracy                          0.315      2643
+   macro avg      0.249     0.265     0.217      2643
+weighted avg      0.436     0.315     0.320      2643
+
+=== depois (B_dermatoscopia+fotos): celular, tau=1.1 ===
+              precision    recall  f1-score   support
+
+          ak      0.541     0.133     0.213       747
+         bcc      0.663     0.477     0.555       959
+         bkl      0.359     0.567     0.440       261
+          df      0.088     0.727     0.158        22
+         mel      0.224     0.504     0.311       117
+          nv      0.806     0.391     0.526       297
+         scc      0.200     0.550     0.294       240
+        vasc      0.000     0.000     0.000         0
+
+    accuracy                          0.389      2643
+   macro avg      0.360     0.419     0.312      2643
+weighted avg      0.548     0.389     0.406      2643
