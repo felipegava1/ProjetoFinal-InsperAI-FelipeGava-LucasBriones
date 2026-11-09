@@ -70,6 +70,59 @@ O professor treinado (EfficientNetV2-B0, 224 px) está em `modelos/professor_eff
 Com esses arquivos, o notebook pula o treino (~7 h na CPU) e vai direto aos testes. Ele ainda
 precisa da base de dados no PC (passos acima), para as imagens e os rótulos.
 
+Há também o professor ajustado para **foto de celular**, em `modelos/professor_simulando_celular/`
+(mesma arquitetura e entradas; receita, números e limitações no `README.md` da pasta e na seção
+"Fotos de celular" do notebook).
+
+## Bases de dados ampliadas (fotos de celular)
+
+O uso final é em foto de celular, então além do ISIC 2019/2018 baixamos as outras bases públicas
+com rótulo, inclusive as de foto comum. As imagens (~54 GB brutos, 483 mil arquivos) ficam **fora
+do repositório**, em `data/` (gitignorado); o que vai para o git é o que reproduz tudo: os scripts
+de download e preparo em `scripts/`, o manifesto comprimido (`data/processed/manifesto.csv.gz`) e
+os resumos (`data/processed/resumo_por_classe.csv`, `verificacao.csv`, `qualidade/`).
+
+| Base | O que é | Imagens | Melanomas | Aparelho | Como obter |
+|---|---|---|---|---|---|
+| ISIC 2019 (treino + teste rotulado) | HAM10000 + BCN_20000 + MSK, 8 classes | 33.569 | 5.849 | dermatoscópio | `baixar_dados.py isic2019` |
+| ISIC 2020 | SIIM-ISIC, só as com diagnóstico específico entram nas 8 classes | 33.126 | 584 | dermatoscópio | `baixar_dados.py isic2020` |
+| ISIC 2024 (SLICE-3D) | recortes de fotografia corporal total 3D, 393 malignos; rótulo só em conjunto (benigno/maligno/indeterminado) | 401.059 | 157 | TBP (Vectra) | `baixar_dados.py isic2024` |
+| MILK10k | 5.240 lesões, cada uma com dermatoscopia **e** foto de perto, 96% com histopatologia | 10.480 | 900 | dermatoscópio + câmera | `baixar_dados.py milk10k` |
+| Fotos clínicas do acervo ISIC | PAD-UFES-20 (2.298, **celular**, Brasil), HIBA (355, **celular**, Argentina), MSKCC (1.276, câmera, corpo inteiro), anônima (100) | 4.029 | 175 | celular / câmera | `baixar_metadados_clinicas.py` e depois `baixar_imagens_clinicas.py` |
+| MED-NODE | 70 melanomas e 100 nevos em foto clínica (Groningen) | 170 | 70 | câmera | manual: [cs.rug.nl/~imaging/databases/melanoma_naevi](https://www.cs.rug.nl/~imaging/databases/melanoma_naevi/) → `data/raw/mednode/complete_mednode_dataset.zip` |
+| SCIN (Google) | fotos de celular de condições de pele em geral (quase tudo inflamatório/infeccioso), rótulo fraco de dermatologistas | 10.379 | 3 | **celular** | `baixar_scin.py` |
+| ISIC 2018 Task 3 | HAM10000 com o teste oficial (1.512) | — | — | dermatoscópio | `baixar_dados.py isic2018` (não entra no manifesto: o treino já está dentro do ISIC 2019 e o teste é lido direto do zip por `treinar_professor.py`) |
+
+Licenças: as bases da ISIC e a MILK10k são CC BY-NC 4.0 (PAD-UFES-20 é CC BY 4.0), MED-NODE é
+para uso acadêmico e a SCIN tem a própria *SCIN Data Use License* (baixada junto). Só uso
+não comercial.
+
+Para reproduzir:
+
+```
+py -3.12 scripts/baixar_dados.py                 # ISIC 2018/2019/2020/2024 e MILK10k (retomável)
+py -3.12 scripts/baixar_metadados_clinicas.py    # lista as fotos clínicas na API da ISIC
+py -3.12 scripts/baixar_imagens_clinicas.py      # baixa as fotos (PAD-UFES-20, HIBA, MSKCC, anônima)
+py -3.12 scripts/baixar_scin.py                  # SCIN (11,7 GB)
+uv run scripts/preparar_dados.py [base ...]      # redimensiona para 256 px e gera o manifesto
+uv run scripts/avaliar_qualidade.py              # nitidez, brilho, quase-duplicatas, mosaicos por fonte
+```
+
+`preparar_dados.py` gera `data/processed/imagens_256/<base>/<id>.jpg` (menor lado 256 px) e o
+`manifesto.csv`, uma linha por imagem: `classe` harmonizada entre as bases (`MEL NV BCC SCC AK BKL
+DF VASC INF OUTRO_BENIGNO OUTRO_MALIGNO BENIGNO_SEM_DIAGNOSTICO INDETERMINADO UNK`), `melanoma`,
+`maligno`, `grupo` (paciente ou lesão: imagens do mesmo grupo nunca se separam entre treino,
+validação e teste), `split` (oficial quando a base tem teste oficial, senão sorteado com semente
+fixa), `duplicada_de` (mesma imagem em outra base; descartar ao juntar), idade, sexo, região do
+corpo, tom de pele e fonte. Cada base fica em cache em `data/processed/_cache/`, então dá para
+processar uma de cada vez; o ISIC 2024 precisa de memória livre (16 GB foram apertados). O
+manifesto do repositório é descompactado com `gzip -dk data/processed/manifesto.csv.gz` (ou
+`pd.read_csv("data/processed/manifesto.csv.gz")` direto).
+
+Os scripts `testar_modelo.py` (avalia um `.keras` em qualquer base do manifesto, agrupando por
+origem) e `treinar_simulando_celular.py` (ajuste para celular, ver seção do notebook) usam esse
+manifesto e as imagens em `imagens_256/`.
+
 ## Treinando no Kaggle
 
 O professor é treinado no Kaggle, que tem GPU grátis (~30 h/semana). As imagens de

@@ -1,7 +1,19 @@
 __pycache__/
+*.pyc
+.venv/
 .ipynb_checkpoints/
 
 # dados ficam fora do repositório (ver README)
 *.zip
 dataverse_files/
 datasets/
+# bases baixadas por scripts/baixar_*.py e preparadas por scripts/preparar_dados.py (dezenas de GB);
+# só o manifesto comprimido e os resumos vão para o repositório
+data/*
+!data/processed/
+data/processed/*
+!data/processed/manifesto.csv.gz
+!data/processed/resumo_por_classe.csv
+!data/processed/verificacao.csv
+!data/processed/qualidade/
+data/processed/qualidade/qualidade_por_imagem.csv

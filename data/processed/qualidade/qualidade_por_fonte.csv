@@ -1,0 +1,8 @@
+fonte,imagens,melanomas,classes,pacientes,lesoes,histopatologia_%,menor_lado_mediano_px,menor_lado_min_px,nitidez_mediana,nitidez_p10,brilho_medio,estouradas_%,escuras_%,quase_duplicatas_%,falha_leitura
+Anonymous,100,37,3,sem id,sem id,97,2000,547,306,199,131,0.0,0.0,0.0,0
+Hospital Italiano de Buenos Aires,355,65,8,248,354,81,865,85,423,255,147,0.3,0.0,0.0,0
+Memorial Sloan Kettering Cancer Center,1276,21,5,73,1212,4,2448,329,302,151,134,0.0,0.0,0.8,0
+PAD-UFES-20,2298,52,6,1373,1891,58,779,147,396,266,142,0.1,0.0,1.6,0
+isic2019,33569,5849,9,sem id,11847,0,1024,450,357,40,143,0.6,13.3,2.5,0
+mednode,170,70,2,sem id,sem id,0,773,201,361,246,124,0.0,0.0,0.0,0
+milk10k,10480,900,11,sem id,5240,96,450,450,352,223,144,0.3,0.1,0.2,0

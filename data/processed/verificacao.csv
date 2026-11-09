@@ -1,0 +1,9 @@
+base,particao_oficial,linhas_de_rotulo,imagens_no_zip,rotulo_sem_imagem,imagem_sem_rotulo,sem_classe,imagem_corrompida
+scin,train,10380,10379,1,0,0,0
+isic2019,train,25331,25331,0,0,0,0
+isic2019,test,8238,8238,0,0,0,0
+isic2020,train,33126,33126,0,0,0,0
+isic2024,train,401059,401059,0,0,0,0
+milk10k,train,10480,10480,0,0,0,0
+isic_clinicas,train,4029,4508,0,479,0,0
+mednode,train,170,170,0,0,0,0
