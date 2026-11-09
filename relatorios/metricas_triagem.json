@@ -1,0 +1,187 @@
+{
+  "modalidade": {
+    "n": 2671,
+    "acuracia_balanceada": 0.9858845477989,
+    "acuracia_por_origem": {
+      "SCIN": 0.9926470588235294,
+      "PAD": 0.9534883720930233,
+      "ISIC": 0.9907346128391793
+    }
+  },
+  "roteador": {
+    "n": 1146,
+    "acuracia_balanceada": 0.968222612074465,
+    "f1_por_classe": {
+      "erupcao_alergia": 0.9806612601372426,
+      "pinta": 0.9550072568940493
+    },
+    "fora_do_escopo_pct": 0.059336823734729496,
+    "calibracao": {
+      "temperatura": 1.1909371190844609,
+      "ece_antes": 0.007619276616793842,
+      "ece_depois": 0.006487733094480054
+    },
+    "pintas_scin_externo": {
+      "imagens": 35,
+      "casos": 17,
+      "recall_pinta": 0.05714285714285714
+    }
+  },
+  "especialista": {
+    "n_imagens": 802,
+    "n_casos": 380,
+    "n_classes": 17,
+    "rotulo_usado": "suave",
+    "comparacao_val": {
+      "unico": {
+        "val_bal_acc": 0.26274665651566903,
+        "val_f1_macro": 0.23115243886431802
+      },
+      "suave": {
+        "val_bal_acc": 0.23923602321516005,
+        "val_f1_macro": 0.25271287993126984
+      }
+    },
+    "acuracia": 0.2830423940149626,
+    "acuracia_top3": 0.6920199501246883,
+    "acuracia_balanceada": 0.17034263523083043,
+    "f1_macro": 0.18154047491240527,
+    "auroc_macro": 0.8062900640180027,
+    "acuracia_por_caso": 0.33421052631578946,
+    "sem_identificar_pct": 0.1059850374064838,
+    "sensibilidade_por_classe": {
+      "Acne": 0.125,
+      "Contact Dermatitis": 0.24113475177304963,
+      "Dermatitis, NOS": 0.0,
+      "Drug Rash": 0.0625,
+      "Eczema": 0.18072289156626506,
+      "Folliculitis": 0.16666666666666666,
+      "Herpes Simplex": 0.4117647058823529,
+      "Herpes Zoster": 0.0,
+      "Insect Bite": 0.23076923076923078,
+      "O/E - ecchymoses present": 0.14285714285714285,
+      "Pigmented purpuric eruption": 0.06666666666666667,
+      "Pityriasis rosea": 0.16666666666666666,
+      "Psoriasis": 0.041666666666666664,
+      "Tinea": 0.15,
+      "Tinea Versicolor": 0.0,
+      "Urticaria": 0.3148148148148148,
+      "outras_condicoes": 0.5945945945945946
+    },
+    "calibracao": {
+      "temperatura": 1.419257671336477,
+      "ece_antes": 0.16519996936333153,
+      "ece_depois": 0.058196939082068404
+    }
+  },
+  "sistema": {
+    "geral": {
+      "n": 2671,
+      "precisa_atendimento": 868,
+      "taxa_erro_grave": 0.13709677419354838,
+      "erros_graves": 119,
+      "sem_identificar_pct": 0.056533133657806066,
+      "excesso_cautela": 0.31114808652246256
+    },
+    "por_origem": {
+      "ISIC": {
+        "n": 1511,
+        "precisa_atendimento": 307,
+        "taxa_erro_grave": 0.08469055374592833,
+        "erros_graves": 26,
+        "sem_identificar_pct": 0.0,
+        "excesso_cautela": 0.1744186046511628
+      },
+      "PAD": {
+        "n": 344,
+        "precisa_atendimento": 272,
+        "taxa_erro_grave": 0.003676470588235294,
+        "erros_graves": 1,
+        "sem_identificar_pct": 0.11337209302325581,
+        "excesso_cautela": 0.9861111111111112
+      },
+      "SCIN": {
+        "n": 816,
+        "precisa_atendimento": 289,
+        "taxa_erro_grave": 0.31833910034602075,
+        "erros_graves": 92,
+        "sem_identificar_pct": 0.13725490196078433,
+        "excesso_cautela": 0.5313092979127134
+      }
+    },
+    "celular_confundida_com_dermatoscopia": 22
+  },
+  "tipo_de_pele": {
+    "monk": {
+      "1-2": {
+        "imagens": 381,
+        "casos": 178,
+        "acuracia": 0.27034120734908135,
+        "acuracia_top3": 0.6981627296587927,
+        "acuracia_balanceada": 0.1774927479130211
+      },
+      "3-4": {
+        "imagens": 314,
+        "casos": 151,
+        "acuracia": 0.2611464968152866,
+        "acuracia_top3": 0.6910828025477707,
+        "acuracia_balanceada": 0.17217594646104986
+      },
+      "5-6": {
+        "imagens": 83,
+        "casos": 40,
+        "acuracia": 0.2891566265060241,
+        "acuracia_top3": 0.5903614457831325,
+        "acuracia_balanceada": 0.1537037037037037
+      },
+      "7-10": {
+        "imagens": 20,
+        "casos": 9,
+        "acuracia": 0.8,
+        "acuracia_top3": 1.0,
+        "acuracia_balanceada": 0.7333333333333334
+      }
+    },
+    "fitzpatrick": {
+      "I-II": {
+        "imagens": 153,
+        "casos": 66,
+        "acuracia": 0.3202614379084967,
+        "acuracia_top3": 0.7058823529411765,
+        "acuracia_balanceada": 0.1834353992890578
+      },
+      "III-IV": {
+        "imagens": 190,
+        "casos": 84,
+        "acuracia": 0.24210526315789474,
+        "acuracia_top3": 0.6105263157894737,
+        "acuracia_balanceada": 0.16681470833947615
+      },
+      "V-VI": {
+        "imagens": 87,
+        "casos": 35,
+        "acuracia": 0.2988505747126437,
+        "acuracia_top3": 0.7471264367816092,
+        "acuracia_balanceada": 0.17834137915273818
+      }
+    },
+    "erro_grave_por_monk": {
+      "1-2": {
+        "precisa_atendimento": 136,
+        "taxa": 0.27941176470588236
+      },
+      "3-4": {
+        "precisa_atendimento": 101,
+        "taxa": 0.42574257425742573
+      },
+      "5-6": {
+        "precisa_atendimento": 37,
+        "taxa": 0.24324324324324326
+      },
+      "7-10": {
+        "precisa_atendimento": 15,
+        "taxa": 0.13333333333333333
+      }
+    }
+  }
+}

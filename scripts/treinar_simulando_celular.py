@@ -12,7 +12,7 @@ Uso:  uv run scripts/treinar_simulando_celular.py --conjunto dermatoscopia|derma
   dermatoscopia+fotos  + fotos clínicas de câmera (MILK10k foto, MED-NODE, MSKCC, anônima)
   --sem-simulacao      só a augmentation original do pipeline.py (controle)
 
-Parte do professor do Felipe (modelos/professor_effv2b0/melhor.keras). Validação, escolha da época
+Parte dos pesos treinados só no ISIC 2019 (modelos/pintas/pesos_de_partida.keras). Validação, escolha da época
 e do tau: só nos splits de validação das mesmas bases (nenhuma foto de celular toca o treino).
 Teste: PAD-UFES-20 e HIBA inteiras (2.653 fotos, 117 melanomas), com TTA. Para acompanhar, a AUC
 de melanoma no celular é impressa a cada época, mas NÃO é usada para escolher nada.
@@ -33,13 +33,13 @@ RAIZ = Path(__file__).resolve().parent.parent
 PROC = RAIZ / "data" / "processed"
 CACHE = PROC / "cache_sog_256"
 OUT = RAIZ / "data" / "modelos" / "simulando_celular"
-MODELO_FELIPE = RAIZ / "modelos" / "professor_effv2b0" / "melhor.keras"
+MODELO_BASE = RAIZ / "modelos" / "pintas" / "pesos_de_partida.keras"
 sys.path.insert(0, str(RAIZ))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from prepare_data import CLASSES  # noqa: E402
-from pipeline import CLASS_IDX, augment, build_cache, center_crop, decode, meta_features  # noqa: E402
-from testar_modelo import PARA_FELIPE, PARA_SITE, definir_grupos, softmax  # noqa: E402
+from pipeline import CLASS_IDX, augment, build_cache, center_crop, decode, meta_features, simular_celular  # noqa: E402
+from testar_modelo import PARA_8_CLASSES, PARA_SITE, definir_grupos, ler_manifesto, softmax  # noqa: E402
 
 SEED = 42
 IMG_SIZE, BATCH_SIZE, WEIGHT_DECAY, TTA_VIEWS = 224, 32, 0.02, 8
@@ -52,13 +52,13 @@ CONJUNTOS = {
 
 
 def montar_tabela(fontes, max_nevos, rapido):
-    m = pd.read_csv(PROC / "manifesto.csv", low_memory=False)
+    m = ler_manifesto()
     m["grupo"] = definir_grupos(m)
     m.loc[(m["base"] == "isic2019") & (m["particao_oficial"] == "train"), "grupo"] = "isic2019_train"
-    m = m[m["arquivo"].notna() & m["duplicada_de"].isna() & m["classe"].isin(PARA_FELIPE)]
+    m = m[m["arquivo"].notna() & m["duplicada_de"].isna() & m["classe"].isin(PARA_8_CLASSES)]
     df = pd.DataFrame({
         "file_id": m["isic_id"].values, "image_path": [str(PROC / a) for a in m["arquivo"]],
-        "dx": m["classe"].map(PARA_FELIPE).values, "grupo": m["grupo"].values, "split": m["split"].values,
+        "dx": m["classe"].map(PARA_8_CLASSES).values, "grupo": m["grupo"].values, "split": m["split"].values,
         "age_approx": m["idade"].values, "sex": m["sexo"].where(m["sexo"].isin(["male", "female"])).values,
         "site": m["local_anatomico"].map(PARA_SITE).values,
     })
@@ -113,101 +113,6 @@ def main():
     prior = treino["dx"].value_counts(normalize=True).reindex(CLASSES).fillna(1e-3).values
     log_prior = np.log(prior)
 
-    # ------------------------------------------------------------------ simulação de celular
-    def talvez(p, fn, img):
-        return tf.cond(tf.random.uniform([]) < p, lambda: fn(img), lambda: img)
-
-    def perda_resolucao(img):
-        """Foto de longe / sensor fraco: reduz para 25–70 % e amplia de volta."""
-        f = tf.random.uniform([], 0.25, 0.7)
-        novo = tf.cast(tf.round(tf.cast(IMG_SIZE, tf.float32) * f), tf.int32)
-        pequena = tf.image.resize(img, (novo, novo), method="area")
-        return tf.image.resize(pequena, (IMG_SIZE, IMG_SIZE), method="bilinear")
-
-    def desfoque(img):
-        """Desfoque gaussiano separável, sigma 0,5–2,5 px."""
-        sigma = tf.random.uniform([], 0.5, 2.5)
-        x = tf.range(-4, 5, dtype=tf.float32)
-        k = tf.exp(-0.5 * (x / sigma) ** 2)
-        k = k / tf.reduce_sum(k)
-        kh = tf.tile(tf.reshape(k, [1, 9, 1, 1]), [1, 1, 3, 1])
-        kv = tf.tile(tf.reshape(k, [9, 1, 1, 1]), [1, 1, 3, 1])
-        x4 = img[None]
-        x4 = tf.nn.depthwise_conv2d(x4, kh, [1, 1, 1, 1], "SAME")
-        x4 = tf.nn.depthwise_conv2d(x4, kv, [1, 1, 1, 1], "SAME")
-        return x4[0]
-
-    def ruido(img):
-        """Ruído de sensor (gaussiano, mais forte em foto escura), sigma 3–14 em 0–255."""
-        sigma = tf.random.uniform([], 3.0, 14.0)
-        return img + tf.random.normal(tf.shape(img)) * sigma
-
-    def jpeg(img):
-        """Compressão JPEG de qualidade 25–80 (apps e mensageiros recomprimem)."""
-        q = tf.random.uniform([], 25, 80, dtype=tf.int32)
-        u8 = tf.cast(tf.clip_by_value(img, 0, 255), tf.uint8)
-        return tf.cast(tf.image.adjust_jpeg_quality(u8, q), tf.float32)
-
-    def balanco_de_branco(img):
-        """Erro de balanço de branco: ganho por canal 0,8–1,2 (luz amarela/azulada)."""
-        ganho = tf.random.uniform([3], 0.8, 1.2)
-        return img * ganho
-
-    def cor_forte(img):
-        x = img / 255.0
-        x = tf.image.random_brightness(x, 0.25)
-        x = tf.image.random_contrast(x, 0.6, 1.4)
-        x = tf.image.random_saturation(x, 0.6, 1.4)
-        x = tf.image.random_hue(x, 0.05)
-        return tf.clip_by_value(x, 0, 1) * 255.0
-
-    def sombra(img):
-        """Gradiente linear de iluminação (sombra da mão / luz lateral), de 0,55 a 1,0."""
-        ang = tf.random.uniform([], 0, 2 * np.pi)
-        forca = tf.random.uniform([], 0.2, 0.45)
-        coords = (tf.range(IMG_SIZE, dtype=tf.float32) / IMG_SIZE) - 0.5
-        proj = tf.cos(ang) * coords[None, :] + tf.sin(ang) * coords[:, None]
-        mask = 1.0 - forca * (proj + 0.5)
-        return img * mask[..., None]
-
-    def afastar(img):
-        """Lesão menor no quadro: encolhe para 50–90 % e preenche com a cor média da borda
-        (pele) mais ruído, como numa foto tirada de mais longe."""
-        f = tf.random.uniform([], 0.5, 0.9)
-        novo = tf.cast(tf.round(tf.cast(IMG_SIZE, tf.float32) * f), tf.int32)
-        pequena = tf.image.resize(img, (novo, novo))
-        borda = tf.concat([tf.reshape(img[:8], [-1, 3]), tf.reshape(img[-8:], [-1, 3]),
-                           tf.reshape(img[:, :8], [-1, 3]), tf.reshape(img[:, -8:], [-1, 3])], 0)
-        # cor da pele = média dos pixels claros da borda (ignora a borda preta do dermatoscópio)
-        claros = tf.boolean_mask(borda, tf.reduce_mean(borda, 1) > 70.0)
-        pele = tf.cond(tf.shape(claros)[0] > 20, lambda: tf.reduce_mean(claros, 0),
-                       lambda: tf.constant([205.0, 160.0, 140.0]))
-        fundo = tf.ones([IMG_SIZE, IMG_SIZE, 3]) * pele + tf.random.normal([IMG_SIZE, IMG_SIZE, 3]) * 6.0
-        dx = tf.random.uniform([], 0, IMG_SIZE - novo + 1, dtype=tf.int32)
-        dy = tf.random.uniform([], 0, IMG_SIZE - novo + 1, dtype=tf.int32)
-        pad = tf.pad(pequena, [[dy, IMG_SIZE - novo - dy], [dx, IMG_SIZE - novo - dx], [0, 0]])
-        mask = tf.pad(tf.ones([novo, novo, 1]), [[dy, IMG_SIZE - novo - dy], [dx, IMG_SIZE - novo - dx], [0, 0]])
-        return pad * mask + fundo * (1 - mask)
-
-    def recorte_interno(img):
-        """Tira a borda circular do dermatoscópio: recorte central de 70–90 % e volta a 224."""
-        f = tf.random.uniform([], 0.7, 0.9)
-        lado = tf.cast(f * IMG_SIZE, tf.int32)
-        canto = (IMG_SIZE - lado) // 2
-        return tf.image.resize(tf.image.crop_to_bounding_box(img, canto, canto, lado, lado), (IMG_SIZE, IMG_SIZE))
-
-    def simular_celular(img):
-        img = talvez(0.5, recorte_interno, img)
-        img = talvez(0.4, afastar, img)
-        img = talvez(0.6, cor_forte, img)
-        img = talvez(0.5, balanco_de_branco, img)
-        img = talvez(0.4, sombra, img)
-        img = talvez(0.5, perda_resolucao, img)
-        img = talvez(0.4, desfoque, img)
-        img = talvez(0.5, ruido, img)
-        img = talvez(0.5, jpeg, img)
-        return tf.clip_by_value(img, 0.0, 255.0)
-
     def make_ds(df, training):
         x = {"image": df["image_path"].values, "meta": meta_features(df)}
         y = df["dx"].map(CLASS_IDX).values
@@ -220,7 +125,7 @@ def main():
             if training:
                 img = augment(img, IMG_SIZE)
                 if not args.sem_simulacao:
-                    img = simular_celular(img)
+                    img = simular_celular(img, IMG_SIZE)
             else:
                 img = center_crop(img, IMG_SIZE)
             return {"image": img, "meta": inp["meta"]}, yy
@@ -288,7 +193,7 @@ def main():
         del model
         keras.backend.clear_session()
     if not (out / "concluido").exists():
-        model = keras.models.load_model(MODELO_FELIPE, compile=False)
+        model = keras.models.load_model(MODELO_BASE, compile=False)
         base = next(l for l in model.layers if "efficientnet" in l.name.lower())
         base.trainable = True
         for layer in base.layers:
@@ -302,7 +207,7 @@ def main():
         orig = np.stack([center_crop(decode(p), IMG_SIZE).numpy() for p in amostra["image_path"]])
         def exemplo(p):
             img = augment(decode(p), IMG_SIZE)
-            return (img if args.sem_simulacao else simular_celular(img)).numpy()
+            return (img if args.sem_simulacao else simular_celular(img, IMG_SIZE)).numpy()
         aug = [np.stack([exemplo(p) for p in amostra["image_path"]]) for _ in range(2)]
         tela = np.concatenate([orig] + aug, axis=0).reshape(3, 8, IMG_SIZE, IMG_SIZE, 3).transpose(0, 2, 1, 3, 4)
         Image.fromarray(np.clip(tela.reshape(3 * IMG_SIZE, 8 * IMG_SIZE, 3), 0, 255).astype(np.uint8)).save(out / "augment_exemplos.jpg", quality=85)
@@ -339,7 +244,7 @@ def main():
 
     linhas, relatorio = [], []
     previsoes = teste[["file_id", "grupo", "dx"]].copy()
-    for nome, caminho_modelo in [("antes (Felipe)", MODELO_FELIPE), (f"depois ({nome_var})", ckpt)]:
+    for nome, caminho_modelo in [("antes (pesos de partida)", MODELO_BASE), (f"depois ({nome_var})", ckpt)]:
         print(f"Avaliando {nome}", flush=True)
         model = keras.models.load_model(caminho_modelo, compile=False)
         p_val = predict_tta(model, val, 1)

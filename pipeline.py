@@ -117,6 +117,107 @@ def augment(img, size):
     return tf.cond(tf.random.uniform([]) < 0.25, lambda: random_vignette(img, size), lambda: img)
 
 
+def _talvez(p, fn, img):
+    return tf.cond(tf.random.uniform([]) < p, lambda: fn(img), lambda: img)
+
+
+def _perda_resolucao(img, size):
+    """Foto de longe / sensor fraco: reduz para 25–70% e amplia de volta."""
+    novo = tf.cast(tf.round(tf.cast(size, tf.float32) * tf.random.uniform([], 0.25, 0.7)), tf.int32)
+    pequena = tf.image.resize(img, (novo, novo), method="area")
+    return tf.image.resize(pequena, (size, size), method="bilinear")
+
+
+def _desfoque(img):
+    """Desfoque gaussiano separável, sigma 0,5–2,5 px."""
+    sigma = tf.random.uniform([], 0.5, 2.5)
+    x = tf.range(-4, 5, dtype=tf.float32)
+    k = tf.exp(-0.5 * (x / sigma) ** 2)
+    k = k / tf.reduce_sum(k)
+    kh = tf.tile(tf.reshape(k, [1, 9, 1, 1]), [1, 1, 3, 1])
+    kv = tf.tile(tf.reshape(k, [9, 1, 1, 1]), [1, 1, 3, 1])
+    x4 = tf.nn.depthwise_conv2d(img[None], kh, [1, 1, 1, 1], "SAME")
+    return tf.nn.depthwise_conv2d(x4, kv, [1, 1, 1, 1], "SAME")[0]
+
+
+def _ruido(img):
+    """Ruído de sensor gaussiano, sigma 3–14 em 0–255."""
+    return img + tf.random.normal(tf.shape(img)) * tf.random.uniform([], 3.0, 14.0)
+
+
+def _jpeg(img):
+    """Compressão JPEG de qualidade 25–80 (apps e mensageiros recomprimem)."""
+    q = tf.random.uniform([], 25, 80, dtype=tf.int32)
+    u8 = tf.cast(tf.clip_by_value(img, 0, 255), tf.uint8)
+    return tf.cast(tf.image.adjust_jpeg_quality(u8, q), tf.float32)
+
+
+def _balanco_de_branco(img):
+    """Erro de balanço de branco: ganho por canal 0,8–1,2 (luz amarela/azulada)."""
+    return img * tf.random.uniform([3], 0.8, 1.2)
+
+
+def _cor_forte(img):
+    x = tf.image.random_brightness(img / 255.0, 0.25)
+    x = tf.image.random_contrast(x, 0.6, 1.4)
+    x = tf.image.random_saturation(x, 0.6, 1.4)
+    x = tf.image.random_hue(x, 0.05)
+    return tf.clip_by_value(x, 0, 1) * 255.0
+
+
+def _sombra(img, size):
+    """Gradiente linear de iluminação (sombra da mão / luz lateral)."""
+    ang = tf.random.uniform([], 0, 2 * np.pi)
+    forca = tf.random.uniform([], 0.2, 0.45)
+    coords = (tf.range(size, dtype=tf.float32) / size) - 0.5
+    proj = tf.cos(ang) * coords[None, :] + tf.sin(ang) * coords[:, None]
+    return img * (1.0 - forca * (proj + 0.5))[..., None]
+
+
+def _afastar(img, size):
+    """Lesão menor no quadro: encolhe para 50–90% e completa com a cor da pele, mais ruído."""
+    novo = tf.cast(tf.round(tf.cast(size, tf.float32) * tf.random.uniform([], 0.5, 0.9)), tf.int32)
+    pequena = tf.image.resize(img, (novo, novo))
+    borda = tf.concat([tf.reshape(img[:8], [-1, 3]), tf.reshape(img[-8:], [-1, 3]),
+                       tf.reshape(img[:, :8], [-1, 3]), tf.reshape(img[:, -8:], [-1, 3])], 0)
+    # cor da pele = média dos pixels claros da borda (ignora a borda preta do dermatoscópio)
+    claros = tf.boolean_mask(borda, tf.reduce_mean(borda, 1) > 70.0)
+    pele = tf.cond(tf.shape(claros)[0] > 20, lambda: tf.reduce_mean(claros, 0),
+                   lambda: tf.constant([205.0, 160.0, 140.0]))
+    fundo = tf.ones([size, size, 3]) * pele + tf.random.normal([size, size, 3]) * 6.0
+    dx = tf.random.uniform([], 0, size - novo + 1, dtype=tf.int32)
+    dy = tf.random.uniform([], 0, size - novo + 1, dtype=tf.int32)
+    margens = [[dy, size - novo - dy], [dx, size - novo - dx], [0, 0]]
+    mask = tf.pad(tf.ones([novo, novo, 1]), margens)
+    return tf.pad(pequena, margens) * mask + fundo * (1 - mask)
+
+
+def _recorte_interno(img, size):
+    """Tira a borda circular do dermatoscópio: recorte central de 70–90% e volta ao tamanho."""
+    lado = tf.cast(tf.random.uniform([], 0.7, 0.9) * size, tf.int32)
+    canto = (size - lado) // 2
+    return tf.image.resize(tf.image.crop_to_bounding_box(img, canto, canto, lado, lado), (size, size))
+
+
+def simular_celular(img, size=224):
+    """Faz uma imagem de dermatoscopia (ou câmera) parecer foto de celular.
+
+    É a ideia central do modelo do projeto: aprender a reconhecer lesões em foto de celular sem
+    usar nenhuma foto de celular no treino. Cada efeito é sorteado com a sua probabilidade. Vem
+    depois de `augment` e espera a imagem já em size x size, float de 0 a 255.
+    """
+    img = _talvez(0.5, lambda x: _recorte_interno(x, size), img)
+    img = _talvez(0.4, lambda x: _afastar(x, size), img)
+    img = _talvez(0.6, _cor_forte, img)
+    img = _talvez(0.5, _balanco_de_branco, img)
+    img = _talvez(0.4, lambda x: _sombra(x, size), img)
+    img = _talvez(0.5, lambda x: _perda_resolucao(x, size), img)
+    img = _talvez(0.4, _desfoque, img)
+    img = _talvez(0.5, _ruido, img)
+    img = _talvez(0.5, _jpeg, img)
+    return tf.clip_by_value(img, 0.0, 255.0)
+
+
 def make_ds(df: pd.DataFrame, img_size=224, batch_size=32, training=False, labels="dx",
             use_meta=False):
     """tf.data a partir do DataFrame.

@@ -2,21 +2,22 @@
 # requires-python = ">=3.12"
 # dependencies = ["tensorflow-cpu", "pandas", "pillow", "numpy", "scikit-learn"]
 # ///
-"""Testa o professor do Felipe (notebook.ipynb, EfficientNetV2-B0 em 224 px) nas bases que
-baixamos (data/processed/manifesto.csv), fora do que ele usou no treino.
+"""Testa o modelo de pintas (modelos/pintas/melhor.keras, EfficientNetV2-B0 em 224 px) nas bases
+que baixamos (data/processed/manifesto.csv).
 
 Uso:  uv run scripts/testar_modelo.py CAMINHO/melhor.keras [opções]
         --grupos G [G ...]   só alguns grupos (ver GRUPOS abaixo)
         --amostra N          no máximo N imagens por grupo (sorteio fixo), para um teste rápido
         --tta                média de 8 visões (4 rotações x espelhamento), como no notebook; 8x mais lento
-        --tau T              intensidade do ajuste de prior (padrão: 0,9, o escolhido na validação dele)
-        --limiar L           limiar da triagem maligno x benigno (padrão: 0,045, o da validação dele)
+        --tau T              intensidade do ajuste de prior (padrão: 1,1, o escolhido na validação)
+        --limiar L           limiar da triagem maligno x benigno (padrão: 0,287, o da validação)
 
 O pré-processamento é o mesmo do pipeline.py (Shades of Gray, recorte central, metadados), para
 que a avaliação valha pelo modelo e não pela entrada. As imagens vêm das cópias de 256 px.
 
-Grupos avaliados (nenhum entrou no treino do professor, que usou o treino do ISIC 2019):
-  isic2019_test             dermatoscopia, 6.191 rotuladas (inclui as 1.511 do teste 2018 que ele já mediu)
+Grupos disponíveis (atenção: isic2020, milk10k, mskcc, anonima e mednode entram no treino do modelo;
+só isic2019_test, pad_ufes_20 e hiba ficam inteiramente de fora):
+  isic2019_test             dermatoscopia, 6.191 rotuladas (inclui as 1.511 do teste 2018)
   isic2020                  dermatoscopia, 33.126 (584 melanomas; a maioria "benigno sem diagnóstico",
                             então só as métricas binárias valem)
   milk10k_dermatoscopia     dermatoscopia, 5.240 (450 melanomas)
@@ -46,29 +47,35 @@ from sklearn.metrics import accuracy_score, balanced_accuracy_score, roc_auc_sco
 RAIZ = Path(__file__).resolve().parent.parent
 PROC = RAIZ / "data" / "processed"
 SAIDA = PROC / "avaliacao_professor"
-sys.path.insert(0, str(RAIZ))  # prepare_data.py e pipeline.py do Felipe, na raiz do repositório
+sys.path.insert(0, str(RAIZ))  # prepare_data.py e pipeline.py, na raiz do repositório
 
 from prepare_data import CLASSES  # noqa: E402  ["ak","bcc","bkl","df","mel","nv","scc","vasc"]
 from pipeline import SITES, meta_features, shades_of_gray  # noqa: E402
 
 IMG_SIZE = 224
-# Contagem das classes no treino dele (notebook, célula "Classes por split"): define o prior
-# que o ajuste de logits desconta na hora de decidir.
-TREINO = {"ak": 719, "bcc": 2824, "bkl": 2251, "df": 200, "mel": 3855, "nv": 10893, "scc": 533, "vasc": 211}
+# Contagem das classes no treino do modelo: define o prior que o ajuste de logits desconta
+# na hora de decidir.
+TREINO = {"ak": 910, "bcc": 6384, "bkl": 3145, "df": 275, "mel": 4981, "nv": 6000, "scc": 1460, "vasc": 280}
 LOG_PRIOR = np.log(np.array([TREINO[c] for c in CLASSES]) / sum(TREINO.values()))
-MALIGNAS_FELIPE = ["ak", "bcc", "mel", "scc"]  # ele conta ak como maligna, como o akiec do HAM10000
+MALIGNAS = ["ak", "bcc", "mel", "scc"]  # ak conta como maligna, como o akiec do HAM10000
 IDX = {c: i for i, c in enumerate(CLASSES)}
 
-# nossa classe harmonizada -> classe do professor (as outras ficam só nas métricas binárias)
-PARA_FELIPE = {"MEL": "mel", "NV": "nv", "BCC": "bcc", "SCC": "scc", "AK": "ak", "BKL": "bkl", "DF": "df", "VASC": "vasc"}
+# nossa classe harmonizada -> classe do modelo (as outras ficam só nas métricas binárias)
+PARA_8_CLASSES = {"MEL": "mel", "NV": "nv", "BCC": "bcc", "SCC": "scc", "AK": "ak", "BKL": "bkl", "DF": "df", "VASC": "vasc"}
 # nossa região anatômica -> as 8 regiões do ISIC 2019 que o modelo conhece. "Tronco" sem dizer se
-# é frente ou costas fica como faltante, igual ao que ele fez com o HAM10000.
+# é frente ou costas fica como faltante, como no HAM10000.
 PARA_SITE = {s: s for s in SITES} | {
     "Head and neck": "head/neck", "head_neck_face": "head/neck",
     "Upper extremity": "upper extremity", "upper_extremity": "upper extremity", "hand": "upper extremity",
     "Lower extremity": "lower extremity", "lower_extremity": "lower extremity", "foot": "lower extremity",
     "genital": "oral/genital",
 }
+
+
+def ler_manifesto():
+    """manifesto.csv gerado por preparar_dados.py ou, se não houver, o comprimido do repositório."""
+    arquivo = PROC / "manifesto.csv"
+    return pd.read_csv(arquivo if arquivo.exists() else PROC / "manifesto.csv.gz", low_memory=False)
 
 
 def definir_grupos(m):
@@ -140,10 +147,10 @@ def avaliar_grupo(g, tau, limiar):
     linha = {"grupo": g["grupo"].iloc[0], "imagens": len(g), "melanomas": int((g["classe"] == "MEL").sum()),
              "tipo": g["tipo_imagem"].mode().iloc[0]}
 
-    # 8 classes: só as imagens cuja classe o professor conhece
-    oito = g["classe_felipe"].notna().to_numpy()
+    # 8 classes: só as imagens cuja classe o modelo conhece
+    oito = g["classe_8"].notna().to_numpy()
     if oito.sum() >= 10:
-        y8 = g.loc[oito, "classe_felipe"].map(IDX).to_numpy()
+        y8 = g.loc[oito, "classe_8"].map(IDX).to_numpy()
         linha["imagens_8_classes"] = int(oito.sum())
         linha["classes_presentes"] = int(len(set(y8)))
         linha["acuracia"] = accuracy_score(y8, pred[oito])
@@ -159,9 +166,9 @@ def avaliar_grupo(g, tau, limiar):
             linha["mel_auc"] = roc_auc_score(mel, p[:, IDX["mel"]])
     linha["mel_falsos_positivos_%"] = 100 * float(e_mel[~mel].mean()) if (~mel).sum() else np.nan
 
-    # triagem maligno x benigno com o limiar dele (soma de ak, bcc, mel, scc, sem ajuste)
-    escore = p[:, [IDX[c] for c in MALIGNAS_FELIPE]].sum(1)
-    mal = g["maligno_felipe"].to_numpy()
+    # triagem maligno x benigno com o limiar dado (soma de ak, bcc, mel, scc, sem ajuste)
+    escore = p[:, [IDX[c] for c in MALIGNAS]].sum(1)
+    mal = g["maligno_8"].to_numpy()
     valido = ~np.isnan(mal)
     if valido.sum() and (mal[valido] == 1).sum() and (mal[valido] == 0).sum():
         mal_b = mal[valido] == 1
@@ -177,8 +184,8 @@ def main():
     ap.add_argument("--grupos", nargs="+", default=GRUPOS, choices=GRUPOS)
     ap.add_argument("--amostra", type=int)
     ap.add_argument("--tta", action="store_true")
-    ap.add_argument("--tau", type=float, default=0.9)
-    ap.add_argument("--limiar", type=float, default=0.045)
+    ap.add_argument("--tau", type=float, default=1.1)
+    ap.add_argument("--limiar", type=float, default=0.287)
     args = ap.parse_args()
 
     import keras  # depois do argparse, para o --help ser instantâneo
@@ -188,7 +195,7 @@ def main():
     print(f"modelo {modelo.name}: {modelo.count_params() / 1e6:.1f} M parâmetros, "
           f"{'imagem + metadados' if usa_meta else 'só imagem'}")
 
-    m = pd.read_csv(PROC / "manifesto.csv", low_memory=False)
+    m = ler_manifesto()
     m["grupo"] = definir_grupos(m)
     m = m[m["grupo"].isin(args.grupos) & m["arquivo"].notna() & ~m["classe"].isin(["UNK", "INDETERMINADO"])]
     m = m[m["duplicada_de"].isna()] if "duplicada_de" in m else m
@@ -196,8 +203,8 @@ def main():
         m = pd.concat([d.sample(min(len(d), args.amostra), random_state=0) for _, d in m.groupby("grupo")])
     m = m.sort_values(["grupo", "isic_id"]).reset_index(drop=True)
 
-    m["classe_felipe"] = m["classe"].map(PARA_FELIPE)
-    m["maligno_felipe"] = m["classe"].map(
+    m["classe_8"] = m["classe"].map(PARA_8_CLASSES)
+    m["maligno_8"] = m["classe"].map(
         {**{c: 1.0 for c in ["MEL", "BCC", "SCC", "AK", "OUTRO_MALIGNO"]},
          **{c: 0.0 for c in ["NV", "BKL", "DF", "VASC", "INF", "OUTRO_BENIGNO", "BENIGNO_SEM_DIAGNOSTICO"]}})
     # metadados nos nomes que o pipeline.py espera
@@ -213,7 +220,7 @@ def main():
     m["previsto"] = [CLASSES[i] for i in ajustar(probs, args.tau).argmax(1)]
 
     SAIDA.mkdir(parents=True, exist_ok=True)
-    cols = ["isic_id", "grupo", "base", "fonte", "tipo_imagem", "classe", "classe_felipe", "previsto"] + [f"p_{c}" for c in CLASSES]
+    cols = ["isic_id", "grupo", "base", "fonte", "tipo_imagem", "classe", "classe_8", "previsto"] + [f"p_{c}" for c in CLASSES]
     m[cols].to_csv(SAIDA / "previsoes.csv", index=False)
 
     resumo = pd.DataFrame([avaliar_grupo(g, args.tau, args.limiar) for _, g in m.groupby("grupo", sort=False)])

@@ -1,7 +1,21 @@
 # Projeto Final – InsperAI (Felipe Gava, Lucas Briones)
 
-Classificação de lesões de pele com uma CNN professor-aluno, usando o ISIC 2019
-(HAM10000 + BCN_20000 + MSK) para treino e o ISIC 2018 Task 3 para teste.
+Projeto acadêmico de apoio à triagem de lesões de pele; o resultado é sempre uma sugestão ou
+orientação, nunca um diagnóstico. Todo o trabalho (código e texto) está no `notebook.ipynb`, e o
+relatório completo em `relatorios/relatorio_projeto.pdf`.
+
+Um **único modelo de pintas** (EfficientNetV2-B0, 224 px, com idade, sexo e região do corpo) atende
+foto de celular e dermatoscopia. A ideia central: ensinar a rede a reconhecer lesões em foto de celular
+**sem usar nenhuma foto de celular no treino**, com fotos clínicas comuns e uma augmentation que simula
+celular (`pipeline.simular_celular`).
+
+| Teste | Acurácia | Acurácia balanceada | AUC melanoma | AUC maligno × benigno |
+|---|---|---|---|---|
+| Dermatoscopia (ISIC 2018, 1.511 imagens) | 82,8% | 75,0% | 0,931 | 0,945 |
+| Foto de celular (PAD-UFES-20 + HIBA, 2.643 fotos) | 38,9% | 47,8% | 0,871 | 0,868 |
+
+Sobre esse modelo, a triagem em duas etapas (seção abaixo) também cobre erupções e alergias em foto de
+celular e dá uma orientação de próximo passo.
 
 ## Preparando a base de dados
 
@@ -57,22 +71,24 @@ df = load_labels()  # DataFrame com caminhos absolutos
 O `notebook.ipynb` já carrega a base e monta os datasets do TensorFlow na primeira seção.
 O carregamento em `tf.data` fica em `pipeline.py`, o mesmo código usado no Kaggle.
 
-### Modelo treinado
+### Modelo
 
-O professor treinado (EfficientNetV2-B0, 224 px) está em `modelos/professor_effv2b0/`:
+O modelo do projeto está em `modelos/pintas/` (receita, resultados e limitações no `README.md` da pasta
+e nas seções 2 a 4 do notebook):
 
-- `melhor.keras`: o modelo (`keras.models.load_model("modelos/professor_effv2b0/melhor.keras")`).
+- `melhor.keras`: o modelo (`keras.models.load_model("modelos/pintas/melhor.keras", compile=False)`).
   Entradas: `image` (224×224×3, 0–255, com Shades of Gray, ver `pipeline.py`) e `meta` (14 valores,
   `pipeline.meta_features`). Saída: logits das 8 classes.
-- `probs.npz`: probabilidades do professor em todos os splits, `probs_fase1.npz` (baseline) e o
-  histórico de treino.
+- `pesos_de_partida.keras`: os pesos só do ISIC 2019, de onde o ajuste começa; servem apenas para retreinar.
+- `probs_isic2018.npz`, `probs_val_dermatoscopia.npz`, `previsoes_celular.csv`: previsões salvas.
 
-Com esses arquivos, o notebook pula o treino (~7 h na CPU) e vai direto aos testes. Ele ainda
-precisa da base de dados no PC (passos acima), para as imagens e os rótulos.
+O notebook não treina o modelo: ele carrega esses arquivos e reavalia tudo, então roda sem os 54 GB da
+base ampliada. Para a exploração, a demonstração da simulação e a Parte 2, ele precisa da base deste
+guia. Retreinar exige a base ampliada (seção seguinte) e leva cerca de 2,5 h na CPU:
 
-Há também o professor ajustado para **foto de celular**, em `modelos/professor_simulando_celular/`
-(mesma arquitetura e entradas; receita, números e limitações no `README.md` da pasta e na seção
-"Fotos de celular" do notebook).
+```
+uv run scripts/treinar_simulando_celular.py --conjunto dermatoscopia+fotos
+```
 
 ## Bases de dados ampliadas (fotos de celular)
 
@@ -120,12 +136,45 @@ manifesto do repositório é descompactado com `gzip -dk data/processed/manifest
 `pd.read_csv("data/processed/manifesto.csv.gz")` direto).
 
 Os scripts `testar_modelo.py` (avalia um `.keras` em qualquer base do manifesto, agrupando por
-origem) e `treinar_simulando_celular.py` (ajuste para celular, ver seção do notebook) usam esse
-manifesto e as imagens em `imagens_256/`.
+origem) e `treinar_simulando_celular.py` (treino do modelo) usam esse manifesto e as imagens em
+`imagens_256/`.
 
-## Treinando no Kaggle
+## Triagem em duas etapas (Parte 2 do notebook)
 
-O professor é treinado no Kaggle, que tem GPU grátis (~30 h/semana). As imagens de
+```
+imagem -> detector de tipo de foto -+- dermatoscopia -> modelo de pintas
+                                    +- foto de celular -> roteador -+- pinta -> modelo de pintas + orientação de avaliação médica
+                                                                    +- erupção/alergia -> especialista (17 classes)
+                                                                    +- baixa confiança -> "não foi possível identificar"
+```
+
+Na foto de celular, o modelo sugere as classes mais prováveis, mas a urgência nunca cai para "cuidados em
+casa": foto de celular não permite descartar um câncer.
+
+Para rodar, além da base deste guia:
+
+1. Coloque os parquets do SCIN na pasta `data_Alergias`, ao lado do repositório (ou defina `SCIN_RAW`).
+2. Instale as dependências extras: `pip install pyarrow imagehash pyyaml scipy` (a primeira célula do notebook já faz isso).
+3. Execute o notebook. O PAD-UFES-20 (cerca de 3,4 GB) é baixado automaticamente. As imagens tratadas ficam em
+   `~/datasets`, e cada rede só é treinada se não estiver em `modelos/triagem/`.
+
+| Etapa no notebook | Saída |
+|---|---|
+| 1. Exploração do SCIN | conclusões e gráficos no próprio notebook |
+| 2. Limpeza | `~/datasets/scin/` e `relatorios/limpeza_scin.md` |
+| 3. Treino, validação e teste | `splits/scin_v1.csv`, `splits/pad_v1.csv` |
+| 4. Arquitetura e treino | `modelos/triagem/*.keras`, `limiares.json` |
+| 5. Orientação | `config/orientacoes.yaml` (rascunho a revisar por um profissional de saúde) e a função `triagem(imagem, respostas_alerta)` |
+| 6. Avaliação | `relatorios/metricas_triagem.json`, `relatorios/figuras/` |
+
+Limitações principais: o roteador aprendeu em boa parte a origem das fotos (reconhece só 5,7% das pintas do SCIN),
+o especialista é fraco para indicar uma única condição, e não há dados suficientes de queimaduras e feridas. O erro
+grave (orientar cuidados em casa quando precisaria de atendimento) é de 13,7%: 8,5% em dermatoscopia e 31,8% nas fotos do SCIN.
+
+## Treinando no Kaggle (arquiteturas maiores)
+
+Caminho alternativo, ainda sem a simulação de celular: serve para testar redes maiores na GPU grátis do
+Kaggle (~30 h/semana), a partir do ISIC 2019. O modelo do projeto não saiu daqui. As imagens de
 treino/validação vêm do dataset público
 [andrewmvd/isic-2019](https://www.kaggle.com/datasets/andrewmvd/isic-2019); o resto sobe como
 dois datasets privados.

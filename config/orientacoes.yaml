@@ -1,0 +1,157 @@
+# RASCUNHO A SER REVISADO POR UM PROFISSIONAL DE SAÚDE.
+# Projeto acadêmico de apoio à triagem: o resultado é uma sugestão ou orientação, nunca um diagnóstico.
+# Toda orientação mostrada ao usuário vem deste arquivo, e nunca de texto gerado pelo modelo.
+#
+# Critério usado neste rascunho: na dúvida, o nível mais alto. O erro mais grave do sistema é
+# orientar cuidados em casa para algo que precisaria de atendimento.
+
+niveis:
+  emergencia:
+    ordem: 3
+    rotulo: "🔴 Emergência"
+    orientacao: "Procure um pronto-socorro agora ou ligue para o SAMU (192)."
+  breve:
+    ordem: 2
+    rotulo: "🟠 Consulta em breve"
+    orientacao: "Procure um médico nos próximos dias."
+  casa:
+    ordem: 1
+    rotulo: "🟢 Cuidados em casa"
+    orientacao: "Pode observar em casa. Procure atendimento se piorar, se espalhar ou se não melhorar em alguns dias."
+
+aviso: "Esta é uma sugestão de um sistema acadêmico de apoio à triagem. Não substitui a avaliação de um profissional de saúde."
+
+nao_identificado:
+  urgencia: breve
+  orientacao: "Não foi possível identificar; procure avaliação médica."
+
+# grupos da etapa A. `ativo: false` = previsto na arquitetura, mas sem dados para treinar
+grupos:
+  pinta:
+    ativo: true
+    nome: "Pinta ou lesão pigmentada"
+  erupcao_alergia:
+    ativo: true
+    nome: "Erupção, alergia ou infecção de pele"
+  queimadura:
+    ativo: false
+    nome: "Queimadura"
+  ferida:
+    ativo: false
+    nome: "Ferida"
+
+# pinta em foto de celular: o modelo de pintas sugere as classes, mas a urgência é sempre "breve",
+# porque a foto de celular não permite descartar um câncer
+pinta_celular:
+  urgencia: breve
+  orientacao: "Foto de celular não permite avaliar uma pinta com segurança. Agende uma avaliação com dermatologista, de preferência com dermatoscopia."
+  orientacao_suspeita: "A foto tem características que merecem avaliação. Agende uma consulta com dermatologista em breve, de preferência com dermatoscopia."
+
+# pinta em imagem dermatoscópica, conforme a probabilidade de malignidade do modelo de pintas
+pinta_dermatoscopia:
+  suspeita:
+    urgencia: breve
+    orientacao: "A imagem tem características que merecem avaliação. Agende uma consulta com dermatologista em breve."
+  baixa_suspeita:
+    urgencia: casa
+    orientacao: "Baixa suspeita nesta imagem. Mantenha o acompanhamento e procure um dermatologista se a pinta mudar de tamanho, cor ou forma, sangrar ou coçar."
+
+condicoes:
+  Eczema:
+    nome: "Eczema"
+    urgencia: casa
+    orientacao: "Mantenha a pele hidratada e evite sabonetes fortes e o que irrita a pele."
+  Contact Dermatitis:
+    nome: "Dermatite de contato"
+    urgencia: casa
+    orientacao: "Tente identificar e evitar o que entrou em contato com a pele. Lave a região com água e sabonete neutro."
+  Dermatitis, NOS:
+    nome: "Dermatite (tipo não especificado)"
+    urgencia: casa
+    orientacao: "Mantenha a pele hidratada e evite produtos que irritem a região."
+  Urticaria:
+    nome: "Urticária"
+    urgencia: casa
+    orientacao: "Costuma melhorar em horas ou dias. Evite o que parece ter desencadeado. Inchaço no rosto ou falta de ar é emergência."
+  Insect Bite:
+    nome: "Picada de inseto"
+    urgencia: casa
+    orientacao: "Lave a região, use compressa fria e evite coçar."
+  Folliculitis:
+    nome: "Foliculite"
+    urgencia: casa
+    orientacao: "Mantenha a região limpa e evite roupas apertadas e depilação até melhorar."
+  Acne:
+    nome: "Acne"
+    urgencia: casa
+    orientacao: "Lave o rosto com sabonete suave e evite espremer as lesões. Procure um dermatologista se for persistente."
+  Tinea:
+    nome: "Micose de pele (tinea)"
+    urgencia: casa
+    orientacao: "Mantenha a região limpa e seca e não compartilhe toalhas. Procure um médico se não melhorar em duas semanas."
+  Tinea Versicolor:
+    nome: "Pitiríase versicolor (pano branco)"
+    urgencia: casa
+    orientacao: "Costuma não ser grave. Procure um médico ou farmacêutico para saber sobre o tratamento."
+  Pityriasis rosea:
+    nome: "Pitiríase rósea"
+    urgencia: casa
+    orientacao: "Costuma melhorar sozinha em semanas. Gestantes devem procurar atendimento médico."
+  Psoriasis:
+    nome: "Psoríase"
+    urgencia: breve
+    orientacao: "É uma condição crônica que tem tratamento. Agende uma consulta com dermatologista."
+  Herpes Simplex:
+    nome: "Herpes simples"
+    urgencia: breve
+    orientacao: "Evite tocar a lesão e o contato próximo enquanto houver feridas. O médico pode indicar tratamento."
+  Herpes Zoster:
+    nome: "Herpes-zóster (cobreiro)"
+    urgencia: breve
+    orientacao: "Procure um médico o quanto antes: o tratamento funciona melhor nos primeiros dias. Se atingir o rosto ou os olhos, vá hoje."
+  Drug Rash:
+    nome: "Reação a medicamento"
+    urgencia: breve
+    orientacao: "Procure um médico antes de tomar a próxima dose. Não pare remédios de uso contínuo sem orientação."
+  Pigmented purpuric eruption:
+    nome: "Erupção purpúrica pigmentada"
+    urgencia: breve
+    orientacao: "Manchas arroxeadas ou acastanhadas devem ser avaliadas por um médico."
+  O/E - ecchymoses present:
+    nome: "Hematomas (equimoses)"
+    urgencia: breve
+    orientacao: "Hematomas sem causa conhecida ou frequentes devem ser avaliados por um médico."
+  outras_condicoes:
+    nome: "Outra condição de pele"
+    urgencia: breve
+    orientacao: "A imagem não se parece com as condições mais comuns que o sistema conhece. Procure avaliação médica."
+
+# Elevam a urgência independentemente da previsão do modelo: vale sempre o nível mais alto
+alertas:
+  - id: falta_ar_inchaco
+    pergunta: "Há falta de ar ou inchaço no rosto, nos lábios ou na garganta?"
+    eleva_para: emergencia
+  - id: manchas_roxas_febre
+    pergunta: "Há manchas roxas que não somem ao pressionar, junto com febre?"
+    eleva_para: emergencia
+  - id: bolhas_mucosas
+    pergunta: "A pele está descolando, ou há bolhas ou feridas na boca, nos olhos ou nos genitais?"
+    eleva_para: emergencia
+  - id: queimadura_grave
+    pergunta: "É uma queimadura extensa ou no rosto, nas mãos ou nos genitais?"
+    eleva_para: emergencia
+  - id: febre
+    pergunta: "Há febre?"
+    eleva_para: breve
+  - id: espalha_rapido
+    pergunta: "A lesão está se espalhando rápido?"
+    eleva_para: breve
+  - id: pus
+    pergunta: "Há pus?"
+    eleva_para: breve
+  - id: crianca_idoso
+    pergunta: "A pessoa é criança ou idosa?"
+    eleva_para: breve
+  - id: diabetes
+    pergunta: "A pessoa tem diabetes?"
+    eleva_para: breve
