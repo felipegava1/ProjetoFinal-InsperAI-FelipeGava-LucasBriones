@@ -1,0 +1,129 @@
+{
+ "config": {
+  "embeddings": [
+   "dinov2_base"
+  ],
+  "meta": true,
+  "caso": true,
+  "rotulo": "suave",
+  "arq": "linear",
+  "epocas": 60,
+  "nome": null,
+  "escolhido": {
+   "wd": 0.0001,
+   "dropout": 0.3,
+   "val_f1_macro": 0.26877674286394876,
+   "melhor_epoca": 13
+  }
+ },
+ "busca": [
+  {
+   "wd": 0.0001,
+   "dropout": 0.3,
+   "val_f1_macro": 0.26877674286394876,
+   "melhor_epoca": 13
+  },
+  {
+   "wd": 0.0001,
+   "dropout": 0.6,
+   "val_f1_macro": 0.26261480087589634,
+   "melhor_epoca": 59
+  },
+  {
+   "wd": 0.001,
+   "dropout": 0.3,
+   "val_f1_macro": 0.26877674286394876,
+   "melhor_epoca": 13
+  },
+  {
+   "wd": 0.001,
+   "dropout": 0.6,
+   "val_f1_macro": 0.26261480087589634,
+   "melhor_epoca": 59
+  },
+  {
+   "wd": 0.01,
+   "dropout": 0.3,
+   "val_f1_macro": 0.2678335167074343,
+   "melhor_epoca": 13
+  },
+  {
+   "wd": 0.01,
+   "dropout": 0.6,
+   "val_f1_macro": 0.26087056887777976,
+   "melhor_epoca": 59
+  },
+  {
+   "wd": 0.1,
+   "dropout": 0.3,
+   "val_f1_macro": 0.2685385242420923,
+   "melhor_epoca": 13
+  },
+  {
+   "wd": 0.1,
+   "dropout": 0.6,
+   "val_f1_macro": 0.2604510673001349,
+   "melhor_epoca": 28
+  }
+ ],
+ "val": {
+  "n_imagens": 801,
+  "n_casos": 380,
+  "acuracia": 0.28714107365792757,
+  "acuracia_top3": 0.5393258426966292,
+  "acuracia_balanceada": 0.2985846254986682,
+  "f1_macro": 0.26877674286394876,
+  "auroc_macro": 0.7647219509772488,
+  "acuracia_por_caso": 0.29736842105263156,
+  "acuracia_balanceada_por_caso": 0.2873475640712871,
+  "sensibilidade_por_classe": {
+   "Acne": 0.3333333333333333,
+   "Contact Dermatitis": 0.2907801418439716,
+   "Dermatitis, NOS": 0.0,
+   "Drug Rash": 0.0,
+   "Eczema": 0.2710843373493976,
+   "Folliculitis": 0.2222222222222222,
+   "Herpes Simplex": 0.4666666666666667,
+   "Herpes Zoster": 0.3076923076923077,
+   "Insect Bite": 0.37735849056603776,
+   "O/E - ecchymoses present": 0.5555555555555556,
+   "Pigmented purpuric eruption": 0.21428571428571427,
+   "Pityriasis rosea": 0.5454545454545454,
+   "Psoriasis": 0.30434782608695654,
+   "Tinea": 0.21052631578947367,
+   "Tinea Versicolor": 0.2727272727272727,
+   "Urticaria": 0.4444444444444444,
+   "outras_condicoes": 0.2594594594594595
+  }
+ },
+ "test": {
+  "n_imagens": 802,
+  "n_casos": 380,
+  "acuracia": 0.3653366583541147,
+  "acuracia_top3": 0.6134663341645885,
+  "acuracia_balanceada": 0.3083687550830325,
+  "f1_macro": 0.2950467014599164,
+  "auroc_macro": 0.802106091145937,
+  "acuracia_por_caso": 0.3631578947368421,
+  "acuracia_balanceada_por_caso": 0.29699433728106794,
+  "sensibilidade_por_classe": {
+   "Acne": 0.1875,
+   "Contact Dermatitis": 0.41843971631205673,
+   "Dermatitis, NOS": 0.0,
+   "Drug Rash": 0.0,
+   "Eczema": 0.3373493975903614,
+   "Folliculitis": 0.4722222222222222,
+   "Herpes Simplex": 0.35294117647058826,
+   "Herpes Zoster": 0.3333333333333333,
+   "Insect Bite": 0.46153846153846156,
+   "O/E - ecchymoses present": 0.42857142857142855,
+   "Pigmented purpuric eruption": 0.26666666666666666,
+   "Pityriasis rosea": 0.3333333333333333,
+   "Psoriasis": 0.25,
+   "Tinea": 0.2,
+   "Tinea Versicolor": 0.36363636363636365,
+   "Urticaria": 0.42592592592592593,
+   "outras_condicoes": 0.41081081081081083
+  }
+ }
+}

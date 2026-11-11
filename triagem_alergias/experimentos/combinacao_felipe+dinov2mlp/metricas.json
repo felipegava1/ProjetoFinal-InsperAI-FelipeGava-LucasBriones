@@ -1,0 +1,66 @@
+{
+ "pesos": {
+  "felipe": 0.5,
+  "dinov2_base+caso+meta_suave_mlp": 0.5
+ },
+ "val": {
+  "n_imagens": 801,
+  "n_casos": 380,
+  "acuracia": 0.3570536828963795,
+  "acuracia_top3": 0.717852684144819,
+  "acuracia_balanceada": 0.2879987805423662,
+  "f1_macro": 0.30467699343620297,
+  "auroc_macro": 0.815375476769166,
+  "acuracia_por_caso": 0.37105263157894736,
+  "acuracia_balanceada_por_caso": 0.2843917961318012,
+  "sensibilidade_por_classe": {
+   "Acne": 0.6,
+   "Contact Dermatitis": 0.3546099290780142,
+   "Dermatitis, NOS": 0.0,
+   "Drug Rash": 0.0625,
+   "Eczema": 0.3373493975903614,
+   "Folliculitis": 0.2777777777777778,
+   "Herpes Simplex": 0.0,
+   "Herpes Zoster": 0.6153846153846154,
+   "Insect Bite": 0.32075471698113206,
+   "O/E - ecchymoses present": 0.2222222222222222,
+   "Pigmented purpuric eruption": 0.35714285714285715,
+   "Pityriasis rosea": 0.45454545454545453,
+   "Psoriasis": 0.13043478260869565,
+   "Tinea": 0.10526315789473684,
+   "Tinea Versicolor": 0.18181818181818182,
+   "Urticaria": 0.35185185185185186,
+   "outras_condicoes": 0.5243243243243243
+  }
+ },
+ "test": {
+  "n_imagens": 802,
+  "n_casos": 380,
+  "acuracia": 0.4027431421446384,
+  "acuracia_top3": 0.7394014962593516,
+  "acuracia_balanceada": 0.3133028760916517,
+  "f1_macro": 0.32536195955298614,
+  "auroc_macro": 0.8391167161537525,
+  "acuracia_por_caso": 0.43157894736842106,
+  "acuracia_balanceada_por_caso": 0.3416216404511961,
+  "sensibilidade_por_classe": {
+   "Acne": 0.5,
+   "Contact Dermatitis": 0.425531914893617,
+   "Dermatitis, NOS": 0.0,
+   "Drug Rash": 0.0,
+   "Eczema": 0.3253012048192771,
+   "Folliculitis": 0.3333333333333333,
+   "Herpes Simplex": 0.35294117647058826,
+   "Herpes Zoster": 0.4166666666666667,
+   "Insect Bite": 0.4230769230769231,
+   "O/E - ecchymoses present": 0.14285714285714285,
+   "Pigmented purpuric eruption": 0.2,
+   "Pityriasis rosea": 0.4166666666666667,
+   "Psoriasis": 0.041666666666666664,
+   "Tinea": 0.25,
+   "Tinea Versicolor": 0.5454545454545454,
+   "Urticaria": 0.3148148148148148,
+   "outras_condicoes": 0.6378378378378379
+  }
+ }
+}

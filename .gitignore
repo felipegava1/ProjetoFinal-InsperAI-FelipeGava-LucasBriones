@@ -17,3 +17,11 @@ data/processed/*
 !data/processed/verificacao.csv
 !data/processed/qualidade/
 data/processed/qualidade/qualidade_por_imagem.csv
+
+# experimentos do especialista v2 (triagem_alergias/experimentos): embeddings e logs ficam fora; métricas, probs e a melhor cabeça entram
+triagem_alergias/experimentos/embeddings/*.npy
+triagem_alergias/experimentos/**/*.log
+triagem_alergias/experimentos/**/*.err
+triagem_alergias/experimentos/_ultimo.*
+triagem_alergias/experimentos/*/cabeca.pt
+!triagem_alergias/experimentos/dinov2_base+caso+meta_suave_mlp/cabeca.pt
