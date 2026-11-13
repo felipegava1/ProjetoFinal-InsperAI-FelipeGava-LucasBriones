@@ -14,6 +14,16 @@ SPLITS = REPO / "splits" / "dermato.csv"                       # divisão fixa (
 RESULTADOS = Path(os.environ.get("DERMATO_RESULTADOS", DATA.parent / "resultados"))
 EXPERIMENTOS = REPO / "resultados" / "experimentos.csv"        # uma linha por rodada (versionado)
 
+
+def achar(nome: str, sub: str) -> Path:
+    """Acha um arquivo de resultado (ex.: achar("E1_final_s42.pt", "modelos")) procurando na pasta de
+    resultados desta máquina (DERMATO_RESULTADOS) e na pasta resultados/ do repositório. Assim quem
+    clona o repositório só precisa colocar os pesos em resultados/modelos/."""
+    for base in (RESULTADOS, REPO / "resultados"):
+        if (base / sub / nome).exists():
+            return base / sub / nome
+    raise FileNotFoundError(f"{nome} não encontrado em {RESULTADOS / sub} nem em {REPO / 'resultados' / sub}")
+
 SEED = 42
 CLASSES = ["ak", "bcc", "bkl", "df", "mel", "nv", "scc", "vasc"]
 IDX = {c: i for i, c in enumerate(CLASSES)}

@@ -55,14 +55,15 @@ def fixar_sementes(seed):
 
 def construir(cfg):
     if cfg["modelo"] == "rede":
-        m = Rede(cfg["backbone"], cfg["meta"], cfg["dropout"], cfg["drop_path"])
+        m = Rede(cfg["backbone"], cfg["meta"], cfg["dropout"], cfg["drop_path"],
+                 pretrained=cfg.get("pretrained", True))
         mean, std = config_dados(m.backbone)
         micro = MICRO_224[cfg["backbone"]]
         backbones = {"backbone": (m.backbone, 1.0)}
     else:
         emb_dim = carregar_embeddings(cfg["emb"]).shape[1] if cfg["emb"] else 0
         m = Fusao(cfg["juncao"], cfg["hidden"], cfg["dropout"], cfg["drop_path"], cfg["meta"],
-                  emb_dim, cfg["emb_dropout"], cfg["emb_norm"])
+                  emb_dim, cfg["emb_dropout"], cfg["emb_norm"], pretrained=cfg.get("pretrained", True))
         if cfg["pesos_cnn"]:
             estado = torch.load(cfg["pesos_cnn"], map_location="cpu", weights_only=True)
             estado = {k.removeprefix("backbone."): v for k, v in estado.items() if k.startswith("backbone.")}

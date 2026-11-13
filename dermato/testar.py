@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-from .config import CLASSES, EXPERIMENTOS, HAM_CLASSES, RAW, RESULTADOS, SEED
+from .config import CLASSES, EXPERIMENTOS, HAM_CLASSES, RAW, RESULTADOS, SEED, achar
 from .dados import ler_splits, loader
 from .metricas import avaliar, escore_maligno, para_ham, ajustar
 from .treinar import PADRAO, carregar_embeddings, construir, prever
@@ -27,7 +27,7 @@ PREV = RESULTADOS / "previsoes"
 def cfg_de(rid):
     exp = pd.read_csv(EXPERIMENTOS)
     linha = exp[exp["id"] == rid].iloc[-1]
-    return PADRAO | json.loads(linha["config"]), linha["modelo"]
+    return PADRAO | json.loads(linha["config"]), achar(f"{rid}.pt", "modelos")   # pelo nome, não pelo caminho salvo
 
 
 def prever_testes(rids):
@@ -35,7 +35,7 @@ def prever_testes(rids):
     df["linha"] = np.arange(len(df))
     for rid in rids:
         cfg, caminho = cfg_de(rid)
-        model, mean, std, micro, _ = construir(cfg | {"pesos_cnn": None})
+        model, mean, std, micro, _ = construir(cfg | {"pesos_cnn": None, "pretrained": False})
         model.load_state_dict(torch.load(caminho, map_location="cpu", weights_only=True))
         model = model.cuda().to(memory_format=torch.channels_last)
         emb = torch.from_numpy(carregar_embeddings(cfg["emb"])) if cfg["emb"] else None

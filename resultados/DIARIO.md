@@ -510,3 +510,24 @@ Estado da E1r até aqui: 448 px 0,7575; gama 4,5 a 384 px **0,7753** (melhor); E
 obtido (melhor: gama 4,5, bal_acc 0,7753); a tentativa 5, recém-iniciada, foi marcada como falha.
 Nova ordem (lançada via WMI): **E2_384 por 6 h** (até ~16:50, mais o retreino) → retreino da melhor
 E1r (`--so-final`, salva `E1r_final_s42.pt`) → fila E3 → E4 → E5 (a E3 parte da melhor E1).
+
+---
+
+## 13/11 11:20 — Modelo utilizável fora desta máquina
+
+Pedido: deixar o modelo usável por quem clonar o repositório (ex.: Felipe).
+- `dermato/prever.py`: roda um modelo final em imagens/pastas novas e grava CSV com classe,
+  probabilidades, escore de malignidade e triagem (tau e limiar da validação). Reproduz o
+  pré-processamento do cache do treino (draft do JPEG + LANCZOS + regravação JPEG 95 + torchvision).
+- Verificação em 6 imagens da **validação** (uma por classe; nada do teste): acertou as 6 com E1 e E0.
+  Probabilidades × as salvas no treino: com os metadados reais, diferença máxima **0,009** (float32 na
+  CPU) e **0,002** em bf16 → o script reproduz o treino. Minha primeira hipótese para uma diferença de
+  0,06 (precisão bf16 × float32) estava errada: a causa era rodar sem metadados. Por isso o README
+  recomenda passar `--meta`.
+- Caminhos portáveis: `config.achar()` acha pesos/calibrações pelo nome em `DERMATO_RESULTADOS` ou em
+  `resultados/` do repositório (antes o `testar.py` dependia do caminho absoluto deste PC).
+- `requirements.txt`, `scripts_dermato/baixar_dados.py` (versão em Python do download, retomável) e
+  seção nova no README.
+- Pesos (23–107 MB; o da E1 passa do limite de 100 MB do GitHub) ficam fora do git
+  (`resultados/modelos/` no .gitignore); somas SHA-256 em `resultados/modelos_sha256.txt`. Cópias
+  prontas para publicar em `F:\dermato\pesos_para_compartilhar\`.

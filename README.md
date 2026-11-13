@@ -1,5 +1,56 @@
 # Projeto Final – InsperAI (Felipe Gava, Lucas Briones)
 
+## Classificador de dermatoscopia (PyTorch) — escopo atual
+
+> O projeto passou a focar só em **dermatoscopia** (ver o "Plano de iterações"). O código novo está
+> em `dermato/`; o restante deste README descreve a versão anterior (TensorFlow, foto de celular).
+> Resultado = apoio à priorização (quem precisa de biópsia/encaminhamento primeiro), nunca diagnóstico.
+
+**Resultados na validação** (5.821 imagens, TTA 8; os testes T1/T2 ainda não foram abertos):
+
+| Modelo | Resolução | Acurácia balanceada | Especificidade a 95% de sensibilidade | AUC melanoma |
+|---|---|---|---|---|
+| E0 — receita atual (EfficientNetV2-B0) | 224 | 0,696 | 0,689 | 0,912 |
+| E0_busca — B0 com parâmetros otimizados | 224 | 0,7345 | 0,703 | 0,917 |
+| **E1 — ConvNeXt-Tiny** | **384** | **0,769** | **0,773** | **0,933** |
+
+Raciocínio, mudanças e números de cada etapa: `resultados/DIARIO.md`; uma linha por treino em
+`resultados/experimentos.csv`; todas as tentativas das buscas em `resultados/optuna.db`.
+
+### Usar um modelo treinado (sem as bases de dados)
+
+1. Dependências (Python 3.12):
+   ```
+   pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cu128
+   pip install -r requirements.txt
+   ```
+   Sem GPU: `pip install torch torchvision` e use `--cpu` abaixo.
+2. Baixe os pesos (`E1_final_s42.pt`, `E0_busca_final_s42.pt`, `E0_final_s42.pt`) da **Release
+   "modelos-dermatoscopia"** deste repositório e coloque em `resultados/modelos/`
+   (confira com `resultados/modelos_sha256.txt`). As calibrações (tau e limiar de triagem) já estão
+   em `resultados/previsoes/`.
+3. Rode:
+   ```
+   python -m dermato.prever caminho/para/imagens --modelo E1_final_s42 [--meta metadados.csv] [--cpu]
+   ```
+   Sai um `previsoes.csv` com a classe, as probabilidades das 8 classes, o escore de malignidade e a
+   triagem (`prioritaria` se o escore passa o limiar de 95% de sensibilidade da validação).
+   `--meta` (colunas `arquivo, idade, sexo, local`) é opcional, mas recomendado: os metadados mudam
+   as probabilidades em até ~0,06.
+
+### Reproduzir o treino
+
+```
+python scripts_dermato/baixar_dados.py        # ISIC 2018/2019, MILK10k, dermatologistas (~15 GB)
+python scripts_dermato/baixar_isic2020.py     # só as 5.993 imagens do ISIC 2020 usadas
+python -m dermato.preparar cache              # cache de 448 px (a divisão fixa já está em splits/)
+python -m dermato.fila --ate E2 --horas "E0_busca=1.25,E1=3.5,E2=3.5"
+```
+Os dados vão para `DERMATO_DATA` (padrão `F:\dermato\data`) e os resultados para
+`DERMATO_RESULTADOS`. Etapas: E0 receita → E0_busca → E1 (ConvNeXt) → E2 (MaxViT) → E3 (fusão
+CNN + Swin) → E4 (+ PanDerm) → E5 (ensemble). Os testes T1/T2 só são abertos com
+`python -m dermato.testar`, nos finalistas.
+
 Projeto acadêmico de apoio à triagem de lesões de pele; o resultado é sempre uma sugestão ou
 orientação, nunca um diagnóstico. Todo o trabalho (código e texto) está no `notebook.ipynb`, e o
 relatório completo em `relatorios/relatorio_projeto.pdf`.
