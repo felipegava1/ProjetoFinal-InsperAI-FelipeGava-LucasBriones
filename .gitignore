@@ -26,5 +26,3 @@ triagem_alergias/experimentos/_ultimo.*
 triagem_alergias/experimentos/*/cabeca.pt
 !triagem_alergias/experimentos/dinov2_base+caso+meta_suave_mlp/cabeca.pt
 
-# classificador de dermatoscopia: pesos dos modelos (100+ MB) ficam fora do git; baixe da Release
-resultados/modelos/

@@ -25,10 +25,10 @@ Raciocínio, mudanças e números de cada etapa: `resultados/DIARIO.md`; uma lin
    pip install -r requirements.txt
    ```
    Sem GPU: `pip install torch torchvision` e use `--cpu` abaixo.
-2. Baixe os pesos (`E1_final_s42.pt`, `E0_busca_final_s42.pt`, `E0_final_s42.pt`) da **Release
-   "modelos-dermatoscopia"** deste repositório e coloque em `resultados/modelos/`
-   (confira com `resultados/modelos_sha256.txt`). As calibrações (tau e limiar de triagem) já estão
-   em `resultados/previsoes/`.
+2. Os pesos (`E1_final_s42.pt`, `E0_busca_final_s42.pt`, `E0_final_s42.pt`) já vêm em
+   `resultados/modelos/` via **Git LFS**: instale o LFS uma vez (`git lfs install`) antes de clonar,
+   ou rode `git lfs pull` num clone já feito (confira com `resultados/modelos_sha256.txt`). As
+   calibrações (tau e limiar de triagem) estão em `resultados/previsoes/`.
 3. Rode:
    ```
    python -m dermato.prever caminho/para/imagens --modelo E1_final_s42 [--meta metadados.csv] [--cpu]
