@@ -671,3 +671,112 @@ confusão E1 × E2 a 384 px). Funções de tabela/gráfico em `dermato/relatorio
 o guia de visualização (paleta validada, um eixo, pontos em vez de barras com eixo cortado, legenda
 fora da área de dados — conferidos visualmente depois de renderizar). Previsões de validação de todos
 os modelos finais copiadas para `resultados/previsoes/`. Regenerar quando E4/E5 terminarem.
+
+## 13/11 21:50 — Plano da noite (2ª noite)
+
+Pedido: treinar os modelos que faltam, bem otimizados, e deixar um resumo pela manhã.
+- Fila atual: retreino da E3 → **E4** (fusão + PanDerm, 3 h, semeada com a vencedora da E3) → **E5**
+  (ensemble da melhor de cada família + calibração por temperatura).
+- Depois (`F:\dermato\depois_finalistas.ps1`, via WMI): **finalistas** — os 3 melhores modelos pela
+  validação, retreinados com mais 2 sementes (43, 44). Motivo: o ruído entre rodadas (~1 ponto) é do
+  tamanho das diferenças entre E1, E2 a 384 px e E3; média ± desvio de 3 sementes é o que separa
+  diferença real de ruído (passo previsto no plano antes de abrir os testes).
+- Os testes T1/T2 continuam fechados.
+
+**22:03 — E4 iniciada** (3 h): ramo ConvNeXt a partir de `E1_final_s42` + Swin + vetor congelado do PanDerm. Semeada com a vencedora da E3 (atenção cruzada, lr 5,3e-5, 384 px) + dropout 0,3 no vetor do PanDerm e vetor normalizado. Retreino da E3: bal_acc 0,7636, spec95 0,761 (tentativa: 0,767 — dentro do ruído).
+
+---
+
+## 14/11 02:25 — E4 (fusão + PanDerm) concluída
+
+9 tentativas em 3 h (7 completas, 2 cortadas). Vencedora: **#1, a semeada** (configuração da E3 + vetor
+PanDerm com dropout 0,3, normalizado): bal_acc 0,7656, spec95 0,756. Retreino `E4_final_s42`: **0,7567 /
+0,749**, AUC mel 0,932 (dentro do ruído da tentativa).
+
+- **O PanDerm não acrescentou nada à fusão**: a mesma configuração sem ele (E3 #7) deu 0,767 / 0,756 —
+  idêntico. Hipótese da E4 ("um modelo que viu muito mais pele compensa a falta de exemplos raros")
+  **não confirmada**: os vetores congelados repetem informação que a CNN treinada já tem.
+- As melhores tentativas tiveram calibração boa (ECE 0,024–0,036 nas #3 e #8), sem a focal forte.
+
+## 14/11 02:26 — E5 (ensemble) concluída
+
+Membros: a melhor de cada família pelo critério da fila (E1, E2 a 384 px, E3, E4). Ajustado na metade A
+da validação (pesos/LightGBM, temperatura, tau, limiar), avaliado na metade B (divisão por grupo).
+Testados todos os subconjuntos × média, média ponderada e LightGBM.
+
+| Na metade B | bal_acc | spec95 | AUC mel | AUC mal | ECE |
+|---|---|---|---|---|---|
+| E1 sozinha | 0,769 | 0,757 | 0,929 | 0,930 | 0,190 |
+| E3 sozinha | 0,768 | 0,734 | 0,938 | 0,948 | 0,051 |
+| **média dos 4 + temperatura (vencedor)** | **0,775** | **0,775** | **0,945** | **0,950** | **0,056** |
+| média E1 + E2 a 384 px | 0,770 | **0,777** | 0,942 | 0,945 | 0,053 |
+
+- bal_acc +0,6 sobre a E1: dentro do ruído. **Os ganhos reais são de ordenação e calibração**: AUC
+  maligno 0,930 → 0,950, AUC melanoma 0,929 → 0,945, spec95 +1,8 ponto e ECE 0,19 → 0,056. Hipótese da E5
+  ("modelos diferentes erram em imagens diferentes") **confirmada** nas métricas de triagem.
+- Média simples ganhou de média ponderada e de LightGBM (com metade da validação para ajustar, os
+  métodos com mais parâmetros não compensam).
+- **Anomalia a investigar**: a E2 a 384 px sozinha aparece com bal_acc 0,722 na metade B, contra 0,768
+  na validação inteira. Suspeita: o tau escolhido só na metade A ficou ruim para ela (tau da E2 a 384 px
+  é sensível). Não afeta o ensemble, mas precisa ser entendido antes de citar esse número.
+
+Finalistas (+2 sementes) iniciados às 02:26: E1, E2 a 384 px, E3 (os 3 maiores bal_acc dos finais).
+
+**02:40 — Anomalia da E2 a 384 px explicada: sensibilidade ao tau.** Na E5, o tau de cada membro é
+escolhido só na metade A (~2.900 imagens). Para a E2 a 384 px isso deu **tau 0,25**, contra **0,60** na
+validação inteira; com tau 0,60, a bal_acc dela na metade B é **0,779** (não 0,722). A E1 é estável
+(tau 0,45 × 0,50; 0,769 × 0,772) e a E3 nem usa o ajuste (treinou com perda ponderada → prior uniforme).
+- Leitura: modelos com focal forte + suavização (E2 a 384 px) têm probabilidades achatadas, e a decisão
+  em 8 classes passa a depender muito do tau; escolhido numa amostra pequena (classes raras com 20–100
+  imagens na metade A), ele varia. A média do ensemble amortece isso.
+- Cuidado para os testes: reportar o tau usado e, para os finalistas, conferir a sensibilidade de
+  bal_acc ao tau (curva bal_acc × tau na validação). O ensemble com temperatura é a opção mais robusta.
+
+---
+
+## 14/11 06:18 — Finalistas (3 sementes) concluídos
+
+Os 3 maiores bal_acc dos modelos finais (E1, E2 a 384 px, E3) retreinados com as sementes 43 e 44
+(mesma configuração; ~4 h de GPU). Média ± desvio-padrão de 3 sementes (validação, TTA 8):
+
+| Modelo | bal_acc | spec95 | AUC mel | AUC mal | ECE |
+|---|---|---|---|---|---|
+| **E1 ConvNeXt 384** | **0,764 ± 0,005** | **0,766 ± 0,006** | 0,934 ± 0,002 | 0,952 ± 0,001 | 0,314 |
+| E3 fusão ConvNeXt+Swin | 0,761 ± 0,003 | 0,754 ± 0,008 | 0,922 ± 0,008 | 0,947 ± 0,002 | 0,207 |
+| E2 MaxViT 384 | 0,757 ± 0,010 | 0,746 ± 0,004 | 0,932 ± 0,001 | 0,948 ± 0,001 | 0,273 |
+
+- **bal_acc: empate** (as médias diferem menos que o desvio entre sementes).
+- **spec95: vantagem pequena e consistente da E1** (as 3 sementes da E1 ficam acima das 3 da E2 a 384 px).
+- Os números de uma semente só eram levemente otimistas (a semente 42 foi a escolhida pela busca):
+  E1 0,769 → média 0,764; E2 a 384 px 0,768 → 0,757.
+
+## 14/11 ~06:40 — Notebook regenerado com E4, E5 e finalistas
+
+`notebook_dermatoscopia.ipynb` agora tem seções completas de E4 e E5, a seção dos finalistas (tabela e
+gráfico de sementes) e a linha de raciocínio/conclusão atualizadas. Previsões de validação de todos os
+modelos (incluindo sementes e o ensemble) em `resultados/previsoes/`.
+
+---
+
+# RESUMO DA 2ª NOITE (13–14/11)
+
+**Tudo concluído, sem falhas nesta noite:** retreino da E3 → E4 (9 tentativas) → E5 → finalistas (6 treinos).
+
+| Etapa | Resultado (validação) | Hipótese |
+|---|---|---|
+| E0 receita | bal_acc 0,696, spec95 0,689 | régua |
+| E0_busca | 0,7345 / 0,703 (+3,9 só com parâmetros) | — |
+| E1 ConvNeXt 384 | **0,764 ± 0,005 / 0,766 ± 0,006** (3 sementes); melanoma 0,62 → 0,77 | confirmada |
+| E2 MaxViT 224 → 384 | 0,746 → 0,757 ± 0,010; empata com E1 na mesma resolução | não confirmada (confusão bkl/ak/scc igual) |
+| E3 fusão CNN+Swin | 0,761 ± 0,003 / 0,754 | não confirmada (não soma à E1) |
+| E4 + PanDerm | 0,757 / 0,749 — idêntico à E3 sem PanDerm | não confirmada |
+| **E5 ensemble (4 modelos + temperatura)** | metade B: 0,775 / **0,775**, AUC maligno **0,950**, ECE **0,056** | **confirmada** (ordenação e calibração) |
+
+Principais aprendizados: (1) parâmetros e **resolução 384 px** renderam mais que trocar de arquitetura;
+(2) ruído entre rodadas ~1 ponto — por isso as 3 sementes; (3) o ensemble é a melhor opção para triagem
+(ordena melhor e tem probabilidades confiáveis); (4) ceratose actínica segue a classe mais difícil;
+(5) a decisão em 8 classes de modelos com focal forte é sensível ao tau.
+
+Próximo passo (decisão do grupo): abrir os testes T1/T2 uma única vez nos finalistas —
+sugestão: **E0 (régua), E1 (3 sementes) e E5** — com `python -m dermato.testar prever ...` e
+`relatorio --base E0_final_s42 --finalistas ...` (bootstrap pareado + dermatologistas).

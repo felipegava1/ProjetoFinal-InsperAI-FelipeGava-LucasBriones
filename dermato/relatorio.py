@@ -242,3 +242,37 @@ def grafico_finais(tab):
     ax.set_title("Modelos finais lado a lado", loc="left")
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.12), ncol=2)
     return ax
+
+
+def tabela_sementes(familias, rotulos, sementes=(42, 43, 44)):
+    """Finalistas: média ± desvio-padrão das métricas de validação em 3 sementes."""
+    e = experimentos().drop_duplicates("id", keep="last").set_index("id")
+    cols = {"val_bal_acc": "bal_acc", "val_spec95": "spec95", "val_mel_auc": "AUC mel",
+            "val_mal_auc": "AUC mal", "val_ece": "ECE"}
+    linhas = []
+    for fam, rot in zip(familias, rotulos):
+        ids = [f"{fam}_final_s{s}" for s in sementes if f"{fam}_final_s{s}" in e.index]
+        d = e.loc[ids, list(cols)]
+        linha = {"modelo": rot, "sementes": len(ids)}
+        for k, v in cols.items():
+            linha[v] = f"{d[k].mean():.3f} ± {d[k].std():.3f}"
+        linhas.append(linha)
+    return pd.DataFrame(linhas).set_index("modelo")
+
+
+def grafico_sementes(familias, rotulos, sementes=(42, 43, 44)):
+    """Cada semente como um ponto, por modelo: mostra o tamanho do ruído frente às diferenças."""
+    e = experimentos().drop_duplicates("id", keep="last").set_index("id")
+    fig, axs = plt.subplots(1, 2, figsize=(11, 0.6 * len(familias) + 1.4), sharey=True)
+    for ax, (col, nome, cor, marca) in zip(axs, [("val_bal_acc", "acurácia balanceada", AZUL, "o"),
+                                                 ("val_spec95", "especificidade a 95% de sensib.", LARANJA, "D")]):
+        for i, fam in enumerate(familias):
+            v = [e.loc[f"{fam}_final_s{s}", col] for s in sementes if f"{fam}_final_s{s}" in e.index]
+            ax.scatter(v, [i] * len(v), s=55, marker=marca, color=cor, edgecolor=FUNDO, linewidth=1.5, zorder=3)
+            ax.plot([np.mean(v)] * 2, [i - 0.25, i + 0.25], color=TEXTO, linewidth=2, zorder=4)
+        ax.set_title(nome, loc="left")
+        ax.set_xlabel("validação (TTA 8) — cada ponto é uma semente; traço = média")
+        ax.grid(axis="y", visible=False)
+    axs[0].set_yticks(range(len(familias)), rotulos)
+    axs[0].invert_yaxis()
+    return axs

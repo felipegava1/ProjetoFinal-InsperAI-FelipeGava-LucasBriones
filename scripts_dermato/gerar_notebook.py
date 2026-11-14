@@ -226,19 +226,80 @@ rede (E2).
 - 384 px de novo nas melhores; junção por atenção cruzada venceu, mas com poucas tentativas por tipo.
 """)
 
-    for etapa, titulo in (("E4", "E4 — fusão + conhecimento de dermatologia (PanDerm)"),
-                          ("E5", "E5 — ensemble final com calibração")):
-        if etapa in etapas or f"{etapa}_ensemble" in tem:
-            md(f"## {titulo}\n\nResultados na tabela final abaixo; leitura detalhada no `DIARIO.md`.")
-        else:
-            md(f"## {titulo}\n\n*Em andamento — esta seção é preenchida ao rodar o gerador de novo.*")
+    if "E4" in etapas:
+        secao_busca("E4", "E4 — fusão + conhecimento de dermatologia (PanDerm)", """
+Terceiro ramo na fusão da E3: o vetor congelado do PanDerm (1.024 números por imagem, sem ajuste fino).
+**Fraqueza atacada:** classes raras com poucos exemplos (dermatofibroma, lesão vascular, carcinoma
+espinocelular). **Hipótese:** um modelo que viu muito mais pele compensa a falta de exemplos raros. A
+busca foi semeada com a vencedora da E3 + PanDerm.
+""", "Os mesmos parâmetros da E3 + dropout no vetor do PanDerm (0–0,6) e vetor normalizado ou não; 3 h.", """
+- **O PanDerm não acrescentou nada**: a vencedora (a semeada) deu 0,766 / spec95 0,756; a mesma
+  configuração sem o PanDerm (E3 #7) deu 0,767 / 0,756 — idêntico. Retreino: 0,757 / 0,749.
+- **Hipótese não confirmada**: os vetores congelados repetem informação que a CNN treinada já tem; o teste
+  rápido já indicava que eles separam maligno/benigno bem, mas não as classes raras.
+- Efeito colateral bom: as melhores tentativas tiveram calibração excelente (ECE 0,024–0,036).
+""")
+
+    if "E5" in etapas:
+        md("""
+## E5 — ensemble final com calibração
+
+### 1. Como funciona
+Combina as previsões de validação da melhor de cada família (E1, E2 a 384 px, E3, E4) e calibra as
+probabilidades com uma temperatura. **Fraqueza atacada:** variação entre modelos e probabilidades mal
+calibradas (ECE de ~0,3 em E1/E2). **Hipótese:** modelos diferentes erram em imagens diferentes. Como usa as
+previsões da própria validação, é **ajustado na metade A** e **avaliado na metade B** (divisão por grupo).
+
+### 2. O que foi variado
+Todos os subconjuntos dos 4 modelos × média simples, média ponderada (pesos ótimos na metade A) e LightGBM
+sobre as probabilidades; temperatura ajustada na metade A. Minutos na CPU.
+""")
+        code("""
+ens = pd.read_csv('resultados/ensemble_busca.csv')
+ens[['membros','metodo','bal_acc','spec95','mel_auc','mal_auc','ece','temperatura']].head(10).round(4)
+""")
+        md("""
+### 3–4. Resultado e leitura (metade B da validação)
+- Vencedor: **média simples dos 4 modelos + temperatura**: bal_acc 0,775, **spec95 0,775, AUC melanoma
+  0,945, AUC maligno 0,950, ECE 0,056**. A E1 sozinha, na mesma metade B: 0,769 / 0,757 / 0,929 / 0,930 / 0,190.
+- O ganho em bal_acc (+0,6) está dentro do ruído; **os ganhos reais são de ordenação e calibração**
+  (AUC maligno +0,020, AUC melanoma +0,016, spec95 +1,8 ponto, ECE 0,19 → 0,056): exatamente o que importa
+  para triagem. **Hipótese confirmada** nas métricas de triagem.
+- Média simples ganhou da ponderada e do LightGBM: com metade da validação para ajustar, mais parâmetros
+  não compensam.
+- Achado: a decisão em 8 classes da E2 a 384 px é muito sensível ao tau (0,722 na metade B com o tau da
+  metade A, 0,779 com o da validação inteira); a média do ensemble amortece essa instabilidade.
+""")
+
+    sementes = [f for f in ("E1", "E2_384", "E3") if f"{f}_final_s44" in tem]
+    if sementes:
+        rot_s = {"E1": "E1 ConvNeXt 384", "E2_384": "E2 MaxViT 384", "E3": "E3 fusão ConvNeXt+Swin"}
+        md("""
+## Finalistas: 3 sementes cada
+
+O ruído entre rodadas (~1 ponto) é do tamanho das diferenças entre os melhores modelos. Os 3 maiores
+bal_acc da validação foram retreinados com as sementes 43 e 44 (mesma configuração), como manda o
+protocolo: **uma diferença menor que a variação entre sementes é empate.**
+""")
+        code(f"display(rel.tabela_sementes({json.dumps(sementes)}, {json.dumps([rot_s[f] for f in sementes])}))\n"
+             f"rel.grafico_sementes({json.dumps(sementes)}, {json.dumps([rot_s[f] for f in sementes])}); "
+             "plt.tight_layout(); plt.show()")
+        md("""
+- **Acurácia balanceada: empate.** E1 0,764 ± 0,005, E3 0,761 ± 0,003, E2 a 384 px 0,757 ± 0,010 — as
+  médias diferem menos que o desvio entre sementes.
+- **Especificidade a 95%: vantagem pequena e consistente da E1** (0,766 ± 0,006 × 0,754 ± 0,008 da E3 e
+  0,746 ± 0,004 da E2 a 384 px): as três sementes da E1 ficam acima de todas as da E2 a 384 px.
+- AUCs praticamente iguais (melanoma 0,922–0,934; maligno 0,947–0,952).
+- Os números de uma semente só (seção de cada etapa) são um pouco otimistas: a seed 42 foi a escolhida pela
+  busca. A média de 3 sementes é a estimativa honesta para levar aos testes.
+""")
 
     # ------------------------------------------------------------------ linha de raciocínio
     finais = [("E0_final_s42", "E0 receita (B0 224)"), ("E0_busca_final_s42", "E0_busca (B0 224)"),
               ("E2_final_s42", "E2 MaxViT 224"), ("E2_384_final_s42", "E2 MaxViT 384"),
               ("E1_final_s42", "E1 ConvNeXt 384"), ("E1r_final_s42", "E1r ConvNeXt 384 (refino)"),
               ("E3_final_s42", "E3 fusão ConvNeXt+Swin"), ("E4_final_s42", "E4 fusão + PanDerm"),
-              ("E5_ensemble", "E5 ensemble")]
+              ("E5_ensemble", "E5 ensemble (metade B)")]
     finais = [(i, r) for i, r in finais if i in tem]
     md("""
 ## Linha de raciocínio
@@ -251,8 +312,15 @@ rede (E2).
    224 px ficou atrás da E1, e a 384 px empatou com ela — a diferença era resolução, não arquitetura.
 4. **E1/E2 → E3:** juntar CNN e Transformer em ramos separados não superou a CNN sozinha: o ramo Swin
    (224 px) não trouxe informação nova para um ConvNeXt já a 384 px.
-5. **E3 → E4 → E5:** o PanDerm congelado já separa maligno/benigno tão bem quanto o E0; a E4 testa se ele
-   ajuda nas classes raras, e a E5 combina modelos que erram em lesões diferentes, com calibração.
+5. **E3 → E4:** o PanDerm congelado separava maligno/benigno tão bem quanto o E0, mas como terceiro ramo
+   não acrescentou nada: repete informação que a CNN treinada já tem.
+6. **E1–E4 → E5:** como os modelos erram em lesões diferentes (MaxViT melhor em carcinoma espinocelular,
+   ConvNeXt em melanoma e dermatofibroma), a média deles com calibração melhorou ordenação (AUC maligno
+   0,930 → 0,950) e calibração (ECE 0,19 → 0,056) — o que importa para priorizar a fila.
+7. **Finalistas:** com 3 sementes, E1, E3 e E2 a 384 px empatam em acurácia balanceada; a E1 mantém
+   uma vantagem pequena em spec95.
+
+A tabela abaixo usa uma semente por modelo (a 42); a linha do E5 é medida só na metade B da validação.
 """)
     lista = json.dumps([i for i, _ in finais])
     rots = json.dumps([r for _, r in finais])
@@ -274,13 +342,17 @@ plt.tight_layout(); plt.show()
 bootstrap pareado contra o E0 (2.000 amostras) e a comparação com os dermatologistas de Tschandl et al.
 (2020). Esta seção mostrará a diferença entre validação e teste.
 
-### Conclusão parcial (validação)
+### Conclusão (validação; testes ainda fechados)
 
 - O que mais rendeu: **parâmetros** (+3,9 pontos no B0) e **resolução 384 px** (+10 pontos em melanoma),
-  não a troca de arquitetura: ConvNeXt e MaxViT empatam na mesma resolução, e a fusão não somou.
-- Melhor modelo individual até aqui: **E1 (ConvNeXt-Tiny 384 px)** — bal_acc 0,769, spec95 0,773,
-  melanoma 0,77 — com a ressalva de que E1, E1r, E2 a 384 px e E3 estão empatados dentro do ruído.
+  não a troca de arquitetura: ConvNeXt e MaxViT empatam na mesma resolução; a fusão com Transformer (E3) e
+  o PanDerm (E4) não somaram.
+- Melhor modelo individual: **E1 (ConvNeXt-Tiny 384 px)** — 3 sementes: bal_acc 0,764 ± 0,005, spec95
+  0,766 ± 0,006, AUC melanoma 0,934 — empatado em acurácia com E3 e E2 a 384 px, um pouco à frente em spec95.
+- Melhor sistema para triagem: **E5 (média dos 4 + temperatura)** — melhor ordenação (AUC maligno 0,950) e
+  probabilidades calibradas (ECE 0,056).
 - Ceratose actínica continua a classe mais difícil (0,57–0,63) em todas as etapas.
+- Candidatos para abrir os testes: **E0 (régua), E1 (3 sementes) e E5**.
 """)
 
     nb = nbf.v4.new_notebook(cells=cells, metadata={"kernelspec": {"name": "python3", "display_name": "Python 3",
