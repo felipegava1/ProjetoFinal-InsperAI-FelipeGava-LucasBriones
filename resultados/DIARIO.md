@@ -780,3 +780,31 @@ Principais aprendizados: (1) parâmetros e **resolução 384 px** renderam mais 
 Próximo passo (decisão do grupo): abrir os testes T1/T2 uma única vez nos finalistas —
 sugestão: **E0 (régua), E1 (3 sementes) e E5** — com `python -m dermato.testar prever ...` e
 `relatorio --base E0_final_s42 --finalistas ...` (bootstrap pareado + dermatologistas).
+
+---
+
+## 14/11 — Checagem de imagens repetidas entre treino e teste
+
+Pergunta do Lucas: "você garantiu que não havia imagens iguais entre treino e teste?". Resposta honesta:
+só em parte. A divisão garante isic_id e grupo (paciente/lesão) disjuntos, mas o grupo só existe onde a
+base informa (HAM no ISIC 2019 treino, paciente no ISIC 2020, lesão no MILK10k). O teste do ISIC 2019 não
+tem lesion_id, e eu dividi esse teste em metade A (treino) e B (T2) **por imagem**.
+
+Medição (`python -m dermato.duplicatas`, saída em `resultados/duplicatas.csv` e `resultados/figuras/`):
+vizinho mais próximo no treino pelo cosseno dos vetores do PanDerm (centralizados: sem centralizar, todo
+par dá > 0,9) e correlação de pixels do centro. Primeiro tentei pHash 8x8: descartado, marca muitos pares
+de lesões diferentes (fotos de dermatoscopia são muito parecidas entre si).
+
+| split | imagens | cos ≥ 0,95 | cos ≥ 0,90 | cos ≥ 0,85 |
+|---|---|---|---|---|
+| T1 | 1.511 | 5 | 103 (7%) | 441 |
+| T2 | 2.340 | 273 | 662 (28%) | 1.136 |
+| val | 5.821 | 50 | 429 (7%) | 1.796 |
+
+Conferência visual: em T2, ≥ 0,90 é praticamente sempre a mesma lesão (quase tudo vindo da metade A do
+teste ISIC 2019); em T1, 0,90–0,95 também é a mesma lesão (fotos repetidas do HAM, cópias no MILK10k/ISIC
+2020), e 0,85–0,90 já mistura lesões diferentes parecidas.
+
+Conclusão: T2 do jeito que está superestimaria o desempenho; T1 pouco; validação um pouco otimista, mas
+igual para todos os modelos (comparação entre etapas continua válida). Proposta, ainda não aplicada:
+limpar T1/T2 tirando as imagens com vizinho no treino acima do limiar, sem retreinar. Testes seguem fechados.

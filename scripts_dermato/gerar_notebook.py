@@ -103,6 +103,56 @@ augmentation varia **~1 ponto de acurácia balanceada** e **~2 pontos de spec95*
 que isso são empate.
 """)
 
+    # ------------------------------------------------------------------ duplicatas
+    md("""
+### Checagem de imagens repetidas entre treino e teste (14/11)
+
+A divisão garante que nenhum `isic_id` e nenhum grupo (paciente/lesão) cai em dois splits, mas só onde a
+base informa o grupo. O teste do ISIC 2019 **não tem `lesion_id`** e as bases se sobrepõem (MILK10k e
+ISIC 2020 reaproveitam imagens do arquivo ISIC), então a mesma lesão pode aparecer com IDs diferentes.
+
+`python -m dermato.duplicatas` procura, para cada imagem de T1, T2 e validação, a imagem mais parecida no
+treino: **cosseno entre os vetores do PanDerm** (centralizados) e **correlação de pixels** do centro da
+imagem (separa "mesma foto" de "mesma lesão, outra foto"). O hash perceptual foi testado e descartado:
+marca muitos pares de lesões diferentes, porque fotos de dermatoscopia se parecem demais.
+""")
+    code("""
+dup = pd.read_csv('resultados/duplicatas.csv')
+tab = pd.DataFrame({f'cos ≥ {t:.2f}': dup.groupby('split')['cos'].apply(lambda c: (c >= t).sum()) for t in (0.95, 0.90, 0.85)})
+tab.insert(0, 'imagens', dup.groupby('split').size())
+tab['% (cos ≥ 0,90)'] = (100 * tab['cos ≥ 0.90'] / tab['imagens']).round(1)
+tab.loc[['t1', 't2', 'val']]
+""")
+    code("""
+# de onde vem o vizinho mais parecido, para os pares com cos >= 0,90
+dup[dup['cos'] >= 0.90].groupby(['split', 'base', 'viz_base']).size().rename('pares').to_frame()
+""")
+    md("Pares de exemplo por faixa de cosseno (à esquerda a imagem do teste, à direita a mais parecida do treino):")
+    code("""
+from IPython.display import Image as Img, display
+for split in ['t2', 't1']:
+    for faixa in ['0.95', '0.90', '0.85']:
+        print(f'{split.upper()}, cos a partir de {faixa}')
+        display(Img(filename=f'resultados/figuras/duplicatas_{split}_{faixa}.jpg', width=900))
+""")
+    md("""
+**O que a checagem mostrou:**
+
+- **T2 tem vazamento grande.** ~28% das imagens (cos ≥ 0,90) têm a mesma lesão na metade A do teste ISIC
+  2019, que foi para o treino: as duas metades foram sorteadas por imagem, e o BCN fotografa a mesma lesão
+  várias vezes. A partir de 0,95 é a mesma lesão, muitas vezes com o mesmo enquadramento. Do jeito que está,
+  o T2 superestimaria o desempenho.
+- **T1 tem vazamento pequeno.** ~7% (cos ≥ 0,90): fotos da mesma lesão que estão no HAM10000 de treino e
+  cópias que o MILK10k e o ISIC 2020 reaproveitam. Entre 0,85 e 0,90 os pares já são, na maioria, lesões
+  diferentes que só se parecem.
+- **Validação:** ~7% (cos ≥ 0,90), entre as próprias bases de treino. Isso afeta todos os modelos igual,
+  então a comparação entre etapas continua justa, mas os números absolutos ficam um pouco otimistas.
+
+**Correção proposta, antes de abrir os testes (ainda não aplicada):** tirar de T1 e T2 toda imagem com
+vizinho no treino acima do limiar (escolhido olhando os pares da faixa 0,85–0,90), sem retreinar nenhum
+modelo. Os testes ainda estão fechados, então a limpeza não usa nenhuma informação de desempenho.
+""")
+
     # ------------------------------------------------------------------ E0
     md("""
 ## E0 — receita atual (a régua)
@@ -338,7 +388,8 @@ plt.tight_layout(); plt.show()
     md("""
 ### Testes (T1 = ISIC 2018, comparação com dermatologistas; T2 = metade do teste ISIC 2019)
 
-*Ainda não abertos.* Serão rodados uma única vez nos finalistas (`python -m dermato.testar`), com
+*Ainda não abertos.* Antes, eles precisam ser limpos das imagens repetidas do treino (ver "Checagem de
+imagens repetidas" no início). Serão rodados uma única vez nos finalistas (`python -m dermato.testar`), com
 bootstrap pareado contra o E0 (2.000 amostras) e a comparação com os dermatologistas de Tschandl et al.
 (2020). Esta seção mostrará a diferença entre validação e teste.
 
