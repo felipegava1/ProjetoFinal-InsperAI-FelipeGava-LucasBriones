@@ -1,0 +1,479 @@
+isic_id,base,dx,grupo,motivo
+ISIC_0010177,isic2019_train,nv,isic2019:ISIC_0010177,mesma lesão de um par do T1
+ISIC_0024523,isic2019_train,nv,isic2019:HAM_0006246,mesma lesão de um par do T1
+ISIC_0024526,isic2019_train,nv,isic2019:HAM_0000290,mesma lesão de um par do T1
+ISIC_0024531,isic2019_train,nv,isic2019:HAM_0006552,par com imagem do T1
+ISIC_0024585,isic2019_train,nv,isic2019:HAM_0004230,mesma lesão de um par do T1
+ISIC_0024625,isic2019_train,nv,isic2019:HAM_0005780,par com imagem do T1
+ISIC_0024730,isic2019_train,nv,isic2019:HAM_0003188,mesma lesão de um par do T1
+ISIC_0024770,isic2019_train,bkl,isic2019:HAM_0000106,par com imagem do T1
+ISIC_0024785,isic2019_train,nv,isic2019:HAM_0004926,mesma lesão de um par do T1
+ISIC_0024803,isic2019_train,nv,isic2019:HAM_0001168,mesma lesão de um par do T1
+ISIC_0024855,isic2019_train,nv,isic2019:HAM_0003627,mesma lesão de um par do T1
+ISIC_0024858,isic2019_train,nv,isic2019:HAM_0004732,par com imagem do T1
+ISIC_0024924,isic2019_train,nv,isic2019:HAM_0004724,mesma lesão de um par do T1
+ISIC_0025062,isic2019_train,nv,isic2019:HAM_0001418,mesma lesão de um par do T1
+ISIC_0025074,isic2019_train,nv,isic2019:HAM_0000851,par com imagem do T1
+ISIC_0025092,isic2019_train,nv,isic2019:HAM_0001984,par com imagem do T1
+ISIC_0025109,isic2019_train,nv,isic2019:HAM_0005031,par com imagem do T1
+ISIC_0025124,isic2019_train,nv,isic2019:HAM_0004484,par com imagem do T1
+ISIC_0025179,isic2019_train,nv,isic2019:HAM_0005762,mesma lesão de um par do T1
+ISIC_0025187,isic2019_train,nv,isic2019:HAM_0004335,par com imagem do T1
+ISIC_0025213,isic2019_train,nv,isic2019:HAM_0003150,par com imagem do T1
+ISIC_0025294,isic2019_train,nv,isic2019:HAM_0006015,par com imagem do T1
+ISIC_0025355,isic2019_train,nv,isic2019:HAM_0003027,mesma lesão de um par do T1
+ISIC_0025356,isic2019_train,nv,isic2019:HAM_0005320,par com imagem do T1
+ISIC_0025357,isic2019_train,nv,isic2019:HAM_0005118,mesma lesão de um par do T1
+ISIC_0025373,isic2019_train,df,isic2019:HAM_0007569,par com imagem do T1
+ISIC_0025459,isic2019_train,nv,isic2019:HAM_0002727,mesma lesão de um par do T1
+ISIC_0025462,isic2019_train,nv,isic2019:HAM_0000367,mesma lesão de um par do T1
+ISIC_0025495,isic2019_train,nv,isic2019:HAM_0001275,mesma lesão de um par do T1
+ISIC_0025497,isic2019_train,nv,isic2019:HAM_0007006,par com imagem do T1
+ISIC_0025502,isic2019_train,nv,isic2019:HAM_0002125,par com imagem do T1
+ISIC_0025551,isic2019_train,nv,isic2019:HAM_0003022,par com imagem do T1
+ISIC_0025581,isic2019_train,nv,isic2019:HAM_0006358,mesma lesão de um par do T1
+ISIC_0025632,isic2019_train,nv,isic2019:HAM_0004223,par com imagem do T1
+ISIC_0025643,isic2019_train,nv,isic2019:HAM_0000156,par com imagem do T1
+ISIC_0025660,isic2019_train,nv,isic2019:HAM_0001952,par com imagem do T1
+ISIC_0025671,isic2019_train,nv,isic2019:HAM_0004783,mesma lesão de um par do T1
+ISIC_0025769,isic2019_train,nv,isic2019:HAM_0001943,mesma lesão de um par do T1
+ISIC_0025770,isic2019_train,nv,isic2019:HAM_0004913,mesma lesão de um par do T1
+ISIC_0025821,isic2019_train,nv,isic2019:HAM_0002528,mesma lesão de um par do T1
+ISIC_0025839,isic2019_train,nv,isic2019:HAM_0003385,par com imagem do T1
+ISIC_0025874,isic2019_train,bkl,isic2019:HAM_0003689,par com imagem do T1
+ISIC_0025877,isic2019_train,nv,isic2019:HAM_0005123,par com imagem do T1
+ISIC_0026082,isic2019_train,nv,isic2019:HAM_0002379,par com imagem do T1
+ISIC_0026110,isic2019_train,nv,isic2019:HAM_0003295,mesma lesão de um par do T1
+ISIC_0026150,isic2019_train,mel,isic2019:HAM_0004607,mesma lesão de um par do T1
+ISIC_0026164,isic2019_train,nv,isic2019:HAM_0002872,par com imagem do T1
+ISIC_0026216,isic2019_train,nv,isic2019:HAM_0005762,par com imagem do T1
+ISIC_0026220,isic2019_train,nv,isic2019:HAM_0005042,mesma lesão de um par do T1
+ISIC_0026223,isic2019_train,nv,isic2019:HAM_0000464,par com imagem do T1
+ISIC_0026280,isic2019_train,bkl,isic2019:HAM_0006346,par com imagem do T1
+ISIC_0026289,isic2019_train,nv,isic2019:HAM_0005233,par com imagem do T1
+ISIC_0026297,isic2019_train,nv,isic2019:HAM_0005762,mesma lesão de um par do T1
+ISIC_0026298,isic2019_train,bkl,isic2019:HAM_0002529,par com imagem do T1
+ISIC_0026331,isic2019_train,nv,isic2019:HAM_0005940,par com imagem do T1
+ISIC_0026361,isic2019_train,nv,isic2019:HAM_0004537,par com imagem do T1
+ISIC_0026376,isic2019_train,nv,isic2019:HAM_0004418,mesma lesão de um par do T1
+ISIC_0026405,isic2019_train,nv,isic2019:HAM_0005964,mesma lesão de um par do T1
+ISIC_0026497,isic2019_train,nv,isic2019:HAM_0003627,mesma lesão de um par do T1
+ISIC_0026533,isic2019_train,nv,isic2019:HAM_0001159,mesma lesão de um par do T1
+ISIC_0026725,isic2019_train,nv,isic2019:HAM_0001289,par com imagem do T1
+ISIC_0026731,isic2019_train,nv,isic2019:HAM_0001213,mesma lesão de um par do T1
+ISIC_0026738,isic2019_train,mel,isic2019:HAM_0006137,par com imagem do T1
+ISIC_0026771,isic2019_train,nv,isic2019:HAM_0006698,mesma lesão de um par do T1
+ISIC_0026918,isic2019_train,nv,isic2019:HAM_0006573,par com imagem do T1
+ISIC_0026931,isic2019_train,nv,isic2019:HAM_0003901,par com imagem do T1
+ISIC_0026951,isic2019_train,nv,isic2019:HAM_0003861,par com imagem do T1
+ISIC_0026969,isic2019_train,nv,isic2019:HAM_0005148,par com imagem do T1
+ISIC_0027002,isic2019_train,nv,isic2019:HAM_0000464,mesma lesão de um par do T1
+ISIC_0027169,isic2019_train,nv,isic2019:HAM_0003844,par com imagem do T1
+ISIC_0027202,isic2019_train,bkl,isic2019:HAM_0001011,par com imagem do T1
+ISIC_0027209,isic2019_train,nv,isic2019:HAM_0001849,mesma lesão de um par do T1
+ISIC_0027211,isic2019_train,nv,isic2019:HAM_0006262,par com imagem do T1
+ISIC_0027238,isic2019_train,mel,isic2019:HAM_0006152,mesma lesão de um par do T1
+ISIC_0027244,isic2019_train,nv,isic2019:HAM_0006484,par com imagem do T1
+ISIC_0027245,isic2019_train,nv,isic2019:HAM_0006162,par com imagem do T1
+ISIC_0027340,isic2019_train,nv,isic2019:HAM_0007450,par com imagem do T1
+ISIC_0027424,isic2019_train,nv,isic2019:HAM_0002840,par com imagem do T1
+ISIC_0027439,isic2019_train,nv,isic2019:HAM_0006915,par com imagem do T1
+ISIC_0027493,isic2019_train,nv,isic2019:HAM_0003478,mesma lesão de um par do T1
+ISIC_0027494,isic2019_train,nv,isic2019:HAM_0003554,par com imagem do T1
+ISIC_0027537,isic2019_train,nv,isic2019:HAM_0000464,mesma lesão de um par do T1
+ISIC_0027549,isic2019_train,nv,isic2019:HAM_0006358,mesma lesão de um par do T1
+ISIC_0027561,isic2019_train,mel,isic2019:HAM_0004565,par com imagem do T1
+ISIC_0027692,isic2019_train,nv,isic2019:HAM_0003769,mesma lesão de um par do T1
+ISIC_0027701,isic2019_train,nv,isic2019:HAM_0005653,par com imagem do T1
+ISIC_0027713,isic2019_train,bkl,isic2019:HAM_0001562,par com imagem do T1
+ISIC_0027811,isic2019_train,bkl,isic2019:HAM_0006346,par com imagem do T1
+ISIC_0027878,isic2019_train,nv,isic2019:HAM_0007189,mesma lesão de um par do T1
+ISIC_0027912,isic2019_train,nv,isic2019:HAM_0002322,par com imagem do T1
+ISIC_0027929,isic2019_train,nv,isic2019:HAM_0003442,par com imagem do T1
+ISIC_0027968,isic2019_train,nv,isic2019:HAM_0000223,par com imagem do T1
+ISIC_0028097,isic2019_train,nv,isic2019:HAM_0006928,mesma lesão de um par do T1
+ISIC_0028178,isic2019_train,nv,isic2019:HAM_0006083,par com imagem do T1
+ISIC_0028256,isic2019_train,nv,isic2019:HAM_0004218,mesma lesão de um par do T1
+ISIC_0028368,isic2019_train,nv,isic2019:HAM_0002409,mesma lesão de um par do T1
+ISIC_0028379,isic2019_train,nv,isic2019:HAM_0003333,par com imagem do T1
+ISIC_0028382,isic2019_train,nv,isic2019:HAM_0002522,mesma lesão de um par do T1
+ISIC_0028411,isic2019_train,bkl,isic2019:HAM_0005463,mesma lesão de um par do T1
+ISIC_0028527,isic2019_train,nv,isic2019:HAM_0006484,mesma lesão de um par do T1
+ISIC_0028575,isic2019_train,nv,isic2019:HAM_0003528,par com imagem do T1
+ISIC_0028629,isic2019_train,nv,isic2019:HAM_0001003,mesma lesão de um par do T1
+ISIC_0028762,isic2019_train,nv,isic2019:HAM_0001080,mesma lesão de um par do T1
+ISIC_0028793,isic2019_train,nv,isic2019:HAM_0004783,mesma lesão de um par do T1
+ISIC_0028813,isic2019_train,nv,isic2019:HAM_0001067,mesma lesão de um par do T1
+ISIC_0028843,isic2019_train,nv,isic2019:HAM_0002409,mesma lesão de um par do T1
+ISIC_0028918,isic2019_train,nv,isic2019:HAM_0001141,mesma lesão de um par do T1
+ISIC_0028948,isic2019_train,nv,isic2019:HAM_0001333,mesma lesão de um par do T1
+ISIC_0028950,isic2019_train,nv,isic2019:HAM_0007187,mesma lesão de um par do T1
+ISIC_0028954,isic2019_train,nv,isic2019:HAM_0000166,par com imagem do T1
+ISIC_0028966,isic2019_train,nv,isic2019:HAM_0001849,mesma lesão de um par do T1
+ISIC_0029064,isic2019_train,nv,isic2019:HAM_0000134,par com imagem do T1
+ISIC_0029294,isic2019_train,nv,isic2019:HAM_0003564,par com imagem do T1
+ISIC_0029378,isic2019_train,nv,isic2019:HAM_0006620,par com imagem do T1
+ISIC_0029459,isic2019_train,nv,isic2019:HAM_0006884,par com imagem do T1
+ISIC_0029571,isic2019_train,mel,isic2019:HAM_0006152,mesma lesão de um par do T1
+ISIC_0029615,isic2019_train,nv,isic2019:HAM_0006735,mesma lesão de um par do T1
+ISIC_0029701,isic2019_train,nv,isic2019:HAM_0001425,par com imagem do T1
+ISIC_0029725,isic2019_train,nv,isic2019:HAM_0004724,par com imagem do T1
+ISIC_0029789,isic2019_train,bkl,isic2019:HAM_0001562,mesma lesão de um par do T1
+ISIC_0029864,isic2019_train,nv,isic2019:HAM_0000276,par com imagem do T1
+ISIC_0029874,isic2019_train,nv,isic2019:HAM_0003527,mesma lesão de um par do T1
+ISIC_0029907,isic2019_train,nv,isic2019:HAM_0003285,mesma lesão de um par do T1
+ISIC_0029997,isic2019_train,nv,isic2019:HAM_0000526,par com imagem do T1
+ISIC_0030151,isic2019_train,nv,isic2019:HAM_0004614,par com imagem do T1
+ISIC_0030161,isic2019_train,nv,isic2019:HAM_0000622,par com imagem do T1
+ISIC_0030199,isic2019_train,nv,isic2019:HAM_0001165,par com imagem do T1
+ISIC_0030214,isic2019_train,nv,isic2019:HAM_0006216,par com imagem do T1
+ISIC_0030215,isic2019_train,nv,isic2019:HAM_0002978,par com imagem do T1
+ISIC_0030234,isic2019_train,nv,isic2019:HAM_0002152,par com imagem do T1
+ISIC_0030432,isic2019_train,nv,isic2019:HAM_0006735,mesma lesão de um par do T1
+ISIC_0030530,isic2019_train,nv,isic2019:HAM_0001244,par com imagem do T1
+ISIC_0030558,isic2019_train,nv,isic2019:HAM_0007192,par com imagem do T1
+ISIC_0030624,isic2019_train,nv,isic2019:HAM_0006771,par com imagem do T1
+ISIC_0030697,isic2019_train,nv,isic2019:HAM_0001141,par com imagem do T1
+ISIC_0030765,isic2019_train,nv,isic2019:HAM_0003188,mesma lesão de um par do T1
+ISIC_0030774,isic2019_train,nv,isic2019:HAM_0002889,par com imagem do T1
+ISIC_0030791,isic2019_train,nv,isic2019:HAM_0002265,par com imagem do T1
+ISIC_0030831,isic2019_train,nv,isic2019:HAM_0002926,par com imagem do T1
+ISIC_0030834,isic2019_train,nv,isic2019:HAM_0001871,par com imagem do T1
+ISIC_0030894,isic2019_train,nv,isic2019:HAM_0003284,par com imagem do T1
+ISIC_0030900,isic2019_train,nv,isic2019:HAM_0006262,mesma lesão de um par do T1
+ISIC_0030917,isic2019_train,nv,isic2019:HAM_0003036,par com imagem do T1
+ISIC_0030924,isic2019_train,nv,isic2019:HAM_0004049,mesma lesão de um par do T1
+ISIC_0030929,isic2019_train,mel,isic2019:HAM_0003530,par com imagem do T1
+ISIC_0031003,isic2019_train,nv,isic2019:HAM_0001578,par com imagem do T1
+ISIC_0031086,isic2019_train,nv,isic2019:HAM_0004159,par com imagem do T1
+ISIC_0031293,isic2019_train,nv,isic2019:HAM_0004418,mesma lesão de um par do T1
+ISIC_0031357,isic2019_train,nv,isic2019:HAM_0003289,mesma lesão de um par do T1
+ISIC_0031403,isic2019_train,nv,isic2019:HAM_0006421,par com imagem do T1
+ISIC_0031426,isic2019_train,nv,isic2019:HAM_0006612,par com imagem do T1
+ISIC_0031463,isic2019_train,nv,isic2019:HAM_0001263,mesma lesão de um par do T1
+ISIC_0031497,isic2019_train,nv,isic2019:HAM_0004774,par com imagem do T1
+ISIC_0031596,isic2019_train,nv,isic2019:HAM_0002794,par com imagem do T1
+ISIC_0031627,isic2019_train,nv,isic2019:HAM_0002210,mesma lesão de um par do T1
+ISIC_0031642,isic2019_train,mel,isic2019:HAM_0004607,mesma lesão de um par do T1
+ISIC_0031664,isic2019_train,nv,isic2019:HAM_0003871,par com imagem do T1
+ISIC_0031801,isic2019_train,nv,isic2019:HAM_0000990,par com imagem do T1
+ISIC_0031805,isic2019_train,nv,isic2019:HAM_0005023,par com imagem do T1
+ISIC_0031869,isic2019_train,nv,isic2019:HAM_0005002,par com imagem do T1
+ISIC_0031890,isic2019_train,mel,isic2019:HAM_0007420,par com imagem do T1
+ISIC_0031896,isic2019_train,nv,isic2019:HAM_0003027,mesma lesão de um par do T1
+ISIC_0031968,isic2019_train,nv,isic2019:HAM_0003485,par com imagem do T1
+ISIC_0032055,isic2019_train,nv,isic2019:HAM_0007189,mesma lesão de um par do T1
+ISIC_0032056,isic2019_train,nv,isic2019:HAM_0004306,par com imagem do T1
+ISIC_0032080,isic2019_train,nv,isic2019:HAM_0005871,par com imagem do T1
+ISIC_0032120,isic2019_train,nv,isic2019:HAM_0000901,par com imagem do T1
+ISIC_0032162,isic2019_train,nv,isic2019:HAM_0001188,par com imagem do T1
+ISIC_0032183,isic2019_train,nv,isic2019:HAM_0007351,par com imagem do T1
+ISIC_0032289,isic2019_train,nv,isic2019:HAM_0001782,mesma lesão de um par do T1
+ISIC_0032298,isic2019_train,nv,isic2019:HAM_0000694,par com imagem do T1
+ISIC_0032315,isic2019_train,bkl,isic2019:HAM_0005463,mesma lesão de um par do T1
+ISIC_0032485,isic2019_train,nv,isic2019:HAM_0003443,mesma lesão de um par do T1
+ISIC_0032498,isic2019_train,bkl,isic2019:HAM_0001011,par com imagem do T1
+ISIC_0032603,isic2019_train,mel,isic2019:HAM_0000064,par com imagem do T1
+ISIC_0032838,isic2019_train,nv,isic2019:HAM_0001264,mesma lesão de um par do T1
+ISIC_0032885,isic2019_train,nv,isic2019:HAM_0003713,par com imagem do T1
+ISIC_0032907,isic2019_train,nv,isic2019:HAM_0003681,par com imagem do T1
+ISIC_0032909,isic2019_train,nv,isic2019:HAM_0001943,mesma lesão de um par do T1
+ISIC_0032955,isic2019_train,mel,isic2019:HAM_0000064,mesma lesão de um par do T1
+ISIC_0033032,isic2019_train,nv,isic2019:HAM_0003505,mesma lesão de um par do T1
+ISIC_0033057,isic2019_train,nv,isic2019:HAM_0001264,mesma lesão de um par do T1
+ISIC_0033134,isic2019_train,nv,isic2019:HAM_0001943,mesma lesão de um par do T1
+ISIC_0033187,isic2019_train,nv,isic2019:HAM_0003034,par com imagem do T1
+ISIC_0033291,isic2019_train,nv,isic2019:HAM_0003713,mesma lesão de um par do T1
+ISIC_0033375,isic2019_train,nv,isic2019:HAM_0001147,par com imagem do T1
+ISIC_0033563,isic2019_train,nv,isic2019:HAM_0003505,mesma lesão de um par do T1
+ISIC_0033748,isic2019_train,nv,isic2019:HAM_0000747,mesma lesão de um par do T1
+ISIC_0033760,isic2019_train,nv,isic2019:HAM_0003681,mesma lesão de um par do T1
+ISIC_0033871,isic2019_train,mel,isic2019:HAM_0000064,mesma lesão de um par do T1
+ISIC_0034044,isic2019_train,nv,isic2019:HAM_0000747,mesma lesão de um par do T1
+ISIC_0034102,isic2019_train,nv,isic2019:HAM_0003713,mesma lesão de um par do T1
+ISIC_0034154,isic2019_train,nv,isic2019:HAM_0003561,par com imagem do T1
+ISIC_0034181,isic2019_train,nv,isic2019:HAM_0004587,mesma lesão de um par do T1
+ISIC_0034200,isic2019_train,nv,isic2019:HAM_0004583,par com imagem do T1
+ISIC_0034227,isic2019_train,nv,isic2019:HAM_0003505,par com imagem do T1
+ISIC_0034230,isic2019_train,nv,isic2019:HAM_0001264,par com imagem do T1
+ISIC_0034301,isic2019_train,nv,isic2019:HAM_0001943,par com imagem do T1
+ISIC_0034312,isic2019_train,nv,isic2019:HAM_0004216,mesma lesão de um par do T1
+ISIC_0034319,isic2019_train,nv,isic2019:HAM_0000747,mesma lesão de um par do T1
+ISIC_0054747,isic2019_train,mel,isic2019:BCN_0000626,mesma lesão de um par do T1
+ISIC_0055214,isic2019_train,nv,isic2019:BCN_0004977,mesma lesão de um par do T1
+ISIC_0056663,isic2019_train,mel,isic2019:BCN_0000626,mesma lesão de um par do T1
+ISIC_0059539,isic2019_train,nv,isic2019:BCN_0004977,mesma lesão de um par do T1
+ISIC_0059983,isic2019_train,mel,isic2019:BCN_0000626,mesma lesão de um par do T1
+ISIC_0060772,isic2019_train,nv,isic2019:BCN_0004755,par com imagem do T1
+ISIC_0060912,isic2019_train,nv,isic2019:BCN_0004755,mesma lesão de um par do T1
+ISIC_0062530,isic2019_train,mel,isic2019:BCN_0000626,mesma lesão de um par do T1
+ISIC_0064343,isic2019_train,nv,isic2019:BCN_0002327,mesma lesão de um par do T1
+ISIC_0065468,isic2019_train,mel,isic2019:BCN_0000626,mesma lesão de um par do T1
+ISIC_0066060,isic2019_train,nv,isic2019:BCN_0004977,mesma lesão de um par do T1
+ISIC_0066934,isic2019_train,nv,isic2019:BCN_0002327,mesma lesão de um par do T1
+ISIC_0067597,isic2019_train,mel,isic2019:BCN_0000626,mesma lesão de um par do T1
+ISIC_0068776,isic2019_train,mel,isic2019:BCN_0000626,mesma lesão de um par do T1
+ISIC_0034440,isic2019_test,nv,isic2019test:ISIC_0034440,par com imagem do T1
+ISIC_0057262,isic2019_test,nv,isic2019test:ISIC_0057262,mesma lesão de um par do T1
+ISIC_0057991,isic2019_test,nv,isic2019test:ISIC_0057991,mesma lesão de um par do T1
+ISIC_0058406,isic2019_test,nv,isic2019test:ISIC_0058406,mesma lesão de um par do T1
+ISIC_0058566,isic2019_test,nv,isic2019test:ISIC_0058566,mesma lesão de um par do T1
+ISIC_0060964,isic2019_test,nv,isic2019test:ISIC_0060964,mesma lesão de um par do T1
+ISIC_0062079,isic2019_test,nv,isic2019test:ISIC_0062079,mesma lesão de um par do T1
+ISIC_0062317,isic2019_test,nv,isic2019test:ISIC_0062317,mesma lesão de um par do T1
+ISIC_0069527,isic2019_test,nv,isic2019test:ISIC_0069527,mesma lesão de um par do T1
+ISIC_0203016,isic2020,nv,isic2020:IP_1355796,par com imagem do T1
+ISIC_0216689,isic2020,nv,isic2020:IP_9045497,par com imagem do T1
+ISIC_0232963,isic2020,nv,isic2020:IP_0310085,mesma lesão de um par do T1
+ISIC_0476762,isic2020,nv,isic2020:IP_6323321,mesma lesão de um par do T1
+ISIC_0506617,isic2020,nv,isic2020:IP_5178963,par com imagem do T1
+ISIC_0520584,isic2020,nv,isic2020:IP_3749901,par com imagem do T1
+ISIC_0546225,isic2020,nv,isic2020:IP_6428232,mesma lesão de um par do T1
+ISIC_0678649,isic2020,nv,isic2020:IP_2290360,par com imagem do T1
+ISIC_0701449,isic2020,nv,isic2020:IP_1211926,mesma lesão de um par do T1
+ISIC_0717497,isic2020,nv,isic2020:IP_4638162,par com imagem do T1
+ISIC_0892926,isic2020,nv,isic2020:IP_3789216,mesma lesão de um par do T1
+ISIC_1147681,isic2020,nv,isic2020:IP_1989404,par com imagem do T1
+ISIC_1193108,isic2020,nv,isic2020:IP_9985810,par com imagem do T1
+ISIC_1416995,isic2020,nv,isic2020:IP_7716159,par com imagem do T1
+ISIC_1506954,isic2020,nv,isic2020:IP_2669703,par com imagem do T1
+ISIC_1619011,isic2020,nv,isic2020:IP_2039882,par com imagem do T1
+ISIC_1654183,isic2020,nv,isic2020:IP_7518373,par com imagem do T1
+ISIC_1674580,isic2020,nv,isic2020:IP_4194721,mesma lesão de um par do T1
+ISIC_1772523,isic2020,nv,isic2020:IP_4095099,par com imagem do T1
+ISIC_1785314,isic2020,nv,isic2020:IP_9239044,par com imagem do T1
+ISIC_1850251,isic2020,nv,isic2020:IP_7279218,mesma lesão de um par do T1
+ISIC_1894676,isic2020,nv,isic2020:IP_0063457,mesma lesão de um par do T1
+ISIC_1938549,isic2020,nv,isic2020:IP_0387543,mesma lesão de um par do T1
+ISIC_1975265,isic2020,nv,isic2020:IP_0784448,mesma lesão de um par do T1
+ISIC_2044283,isic2020,nv,isic2020:IP_2247155,mesma lesão de um par do T1
+ISIC_2302257,isic2020,nv,isic2020:IP_3878510,par com imagem do T1
+ISIC_2319601,isic2020,nv,isic2020:IP_8418821,par com imagem do T1
+ISIC_2382323,isic2020,nv,isic2020:IP_5178963,par com imagem do T1
+ISIC_2452140,isic2020,nv,isic2020:IP_3970525,mesma lesão de um par do T1
+ISIC_2453557,isic2020,nv,isic2020:IP_0019713,par com imagem do T1
+ISIC_2457024,isic2020,nv,isic2020:IP_8803573,par com imagem do T1
+ISIC_2581536,isic2020,nv,isic2020:IP_7743081,par com imagem do T1
+ISIC_2717587,isic2020,nv,isic2020:IP_2873493,mesma lesão de um par do T1
+ISIC_2808187,isic2020,nv,isic2020:IP_2873493,mesma lesão de um par do T1
+ISIC_2839053,isic2020,nv,isic2020:IP_5691366,par com imagem do T1
+ISIC_2924346,isic2020,nv,isic2020:IP_6623396,mesma lesão de um par do T1
+ISIC_2938260,isic2020,nv,isic2020:IP_4431090,mesma lesão de um par do T1
+ISIC_3111042,isic2020,nv,isic2020:IP_1657778,mesma lesão de um par do T1
+ISIC_3211631,isic2020,nv,isic2020:IP_4786590,mesma lesão de um par do T1
+ISIC_3224784,isic2020,nv,isic2020:IP_9754730,par com imagem do T1
+ISIC_3232275,isic2020,nv,isic2020:IP_6428232,par com imagem do T1
+ISIC_3281337,isic2020,nv,isic2020:IP_3714517,par com imagem do T1
+ISIC_3338703,isic2020,nv,isic2020:IP_6820518,par com imagem do T1
+ISIC_3362526,isic2020,nv,isic2020:IP_0784448,mesma lesão de um par do T1
+ISIC_3496369,isic2020,nv,isic2020:IP_0900824,par com imagem do T1
+ISIC_3814807,isic2020,nv,isic2020:IP_2238880,par com imagem do T1
+ISIC_3828321,isic2020,nv,isic2020:IP_9205477,par com imagem do T1
+ISIC_3885808,isic2020,nv,isic2020:IP_4194721,mesma lesão de um par do T1
+ISIC_4134969,isic2020,nv,isic2020:IP_4277352,par com imagem do T1
+ISIC_4264600,isic2020,nv,isic2020:IP_9985810,mesma lesão de um par do T1
+ISIC_4280886,isic2020,nv,isic2020:IP_7498456,par com imagem do T1
+ISIC_4310834,isic2020,nv,isic2020:IP_2394927,par com imagem do T1
+ISIC_4396799,isic2020,nv,isic2020:IP_8872677,par com imagem do T1
+ISIC_4464522,isic2020,nv,isic2020:IP_5176431,mesma lesão de um par do T1
+ISIC_4523138,isic2020,nv,isic2020:IP_9373614,par com imagem do T1
+ISIC_4610600,isic2020,nv,isic2020:IP_3131410,mesma lesão de um par do T1
+ISIC_4618918,isic2020,nv,isic2020:IP_9955501,par com imagem do T1
+ISIC_4763943,isic2020,nv,isic2020:IP_3878510,par com imagem do T1
+ISIC_4838102,isic2020,nv,isic2020:IP_1658035,mesma lesão de um par do T1
+ISIC_4969372,isic2020,nv,isic2020:IP_8007888,par com imagem do T1
+ISIC_5036010,isic2020,nv,isic2020:IP_3347700,mesma lesão de um par do T1
+ISIC_5055930,isic2020,nv,isic2020:IP_5439716,par com imagem do T1
+ISIC_5093264,isic2020,nv,isic2020:IP_1920963,par com imagem do T1
+ISIC_5145347,isic2020,nv,isic2020:IP_3722746,par com imagem do T1
+ISIC_5297202,isic2020,nv,isic2020:IP_8972853,par com imagem do T1
+ISIC_5556401,isic2020,nv,isic2020:IP_8418821,par com imagem do T1
+ISIC_5589724,isic2020,nv,isic2020:IP_0279820,par com imagem do T1
+ISIC_5631347,isic2020,nv,isic2020:IP_0699776,par com imagem do T1
+ISIC_5691038,isic2020,nv,isic2020:IP_8494731,mesma lesão de um par do T1
+ISIC_5774749,isic2020,nv,isic2020:IP_6428232,mesma lesão de um par do T1
+ISIC_5897296,isic2020,nv,isic2020:IP_2235340,mesma lesão de um par do T1
+ISIC_6038826,isic2020,nv,isic2020:IP_6341009,mesma lesão de um par do T1
+ISIC_6483504,isic2020,nv,isic2020:IP_2285751,par com imagem do T1
+ISIC_6512653,isic2020,mel,isic2020:IP_7600629,par com imagem do T1
+ISIC_6725782,isic2020,nv,isic2020:IP_3131410,mesma lesão de um par do T1
+ISIC_6924502,isic2020,nv,isic2020:IP_0387543,par com imagem do T1
+ISIC_6991849,isic2020,nv,isic2020:IP_9318370,par com imagem do T1
+ISIC_7095615,isic2020,nv,isic2020:IP_8753181,mesma lesão de um par do T1
+ISIC_7144739,isic2020,nv,isic2020:IP_3131410,mesma lesão de um par do T1
+ISIC_7188056,isic2020,nv,isic2020:IP_2507276,par com imagem do T1
+ISIC_7321132,isic2020,nv,isic2020:IP_2238880,mesma lesão de um par do T1
+ISIC_7332892,isic2020,nv,isic2020:IP_1273286,par com imagem do T1
+ISIC_7333167,isic2020,nv,isic2020:IP_1916588,par com imagem do T1
+ISIC_7392681,isic2020,nv,isic2020:IP_1233669,mesma lesão de um par do T1
+ISIC_7504741,isic2020,nv,isic2020:IP_2610032,mesma lesão de um par do T1
+ISIC_7629241,isic2020,nv,isic2020:IP_6510081,par com imagem do T1
+ISIC_7766845,isic2020,nv,isic2020:IP_4611365,par com imagem do T1
+ISIC_7780663,isic2020,nv,isic2020:IP_9985810,par com imagem do T1
+ISIC_7801961,isic2020,nv,isic2020:IP_6820518,mesma lesão de um par do T1
+ISIC_7892855,isic2020,nv,isic2020:IP_7828866,par com imagem do T1
+ISIC_7935007,isic2020,nv,isic2020:IP_7718399,mesma lesão de um par do T1
+ISIC_7991305,isic2020,nv,isic2020:IP_9935748,mesma lesão de um par do T1
+ISIC_8095869,isic2020,nv,isic2020:IP_0301948,par com imagem do T1
+ISIC_8494551,isic2020,nv,isic2020:IP_0516326,mesma lesão de um par do T1
+ISIC_8554535,isic2020,nv,isic2020:IP_2228564,mesma lesão de um par do T1
+ISIC_8611499,isic2020,nv,isic2020:IP_5176722,par com imagem do T1
+ISIC_8775674,isic2020,nv,isic2020:IP_9189624,par com imagem do T1
+ISIC_8921647,isic2020,nv,isic2020:IP_2987599,par com imagem do T1
+ISIC_8923673,isic2020,nv,isic2020:IP_0358262,par com imagem do T1
+ISIC_9041459,isic2020,nv,isic2020:IP_7743248,mesma lesão de um par do T1
+ISIC_9059296,isic2020,nv,isic2020:IP_5178963,mesma lesão de um par do T1
+ISIC_9119715,isic2020,nv,isic2020:IP_6623396,mesma lesão de um par do T1
+ISIC_9157952,isic2020,nv,isic2020:IP_1454551,par com imagem do T1
+ISIC_9160162,isic2020,nv,isic2020:IP_7651698,mesma lesão de um par do T1
+ISIC_9161457,isic2020,nv,isic2020:IP_8367247,mesma lesão de um par do T1
+ISIC_9284063,isic2020,nv,isic2020:IP_3587277,par com imagem do T1
+ISIC_9300579,isic2020,nv,isic2020:IP_7147862,par com imagem do T1
+ISIC_9344664,isic2020,nv,isic2020:IP_7147862,par com imagem do T1
+ISIC_9516313,isic2020,nv,isic2020:IP_1447682,par com imagem do T1
+ISIC_9520758,isic2020,nv,isic2020:IP_9955501,par com imagem do T1
+ISIC_9597903,isic2020,nv,isic2020:IP_2290360,par com imagem do T1
+ISIC_9637941,isic2020,nv,isic2020:IP_8220633,par com imagem do T1
+ISIC_9701171,isic2020,nv,isic2020:IP_3970525,mesma lesão de um par do T1
+ISIC_9704788,isic2020,nv,isic2020:IP_7147862,par com imagem do T1
+ISIC_9783128,isic2020,nv,isic2020:IP_5820702,par com imagem do T1
+ISIC_9839730,isic2020,nv,isic2020:IP_1009595,mesma lesão de um par do T1
+ISIC_9974166,isic2020,nv,isic2020:IP_3970525,mesma lesão de um par do T1
+ISIC_5951892,milk10k,mel,milk10k:IL_0134998,par com imagem do T1
+ISIC_3204703,milk10k,mel,milk10k:IL_0382638,par com imagem do T1
+ISIC_6972742,milk10k,nv,milk10k:IL_0630515,par com imagem do T1
+ISIC_7278376,milk10k,nv,milk10k:IL_0662515,par com imagem do T1
+ISIC_0403826,milk10k,bkl,milk10k:IL_0693769,par com imagem do T1
+ISIC_1536397,milk10k,nv,milk10k:IL_0717553,mesma lesão de um par do T1
+ISIC_5052804,milk10k,nv,milk10k:IL_0786469,par com imagem do T1
+ISIC_6987320,milk10k,nv,milk10k:IL_0788438,mesma lesão de um par do T1
+ISIC_6562442,milk10k,mel,milk10k:IL_0823685,par com imagem do T1
+ISIC_0811703,milk10k,df,milk10k:IL_0868364,par com imagem do T1
+ISIC_9696099,milk10k,nv,milk10k:IL_0887241,par com imagem do T1
+ISIC_7116014,milk10k,nv,milk10k:IL_0966806,par com imagem do T1
+ISIC_5310379,milk10k,bkl,milk10k:IL_0967038,par com imagem do T1
+ISIC_0552734,milk10k,vasc,milk10k:IL_1013534,par com imagem do T1
+ISIC_8012264,milk10k,nv,milk10k:IL_1057711,mesma lesão de um par do T1
+ISIC_7922830,milk10k,mel,milk10k:IL_1062117,par com imagem do T1
+ISIC_1859626,milk10k,nv,milk10k:IL_1077349,par com imagem do T1
+ISIC_1763947,milk10k,nv,milk10k:IL_1087504,par com imagem do T1
+ISIC_0686612,milk10k,vasc,milk10k:IL_1207845,par com imagem do T1
+ISIC_1817453,milk10k,nv,milk10k:IL_1418511,par com imagem do T1
+ISIC_0684627,milk10k,nv,milk10k:IL_1538944,par com imagem do T1
+ISIC_5461210,milk10k,mel,milk10k:IL_1546321,par com imagem do T1
+ISIC_9571862,milk10k,bkl,milk10k:IL_1717276,par com imagem do T1
+ISIC_3265547,milk10k,bcc,milk10k:IL_1752453,par com imagem do T1
+ISIC_7278433,milk10k,nv,milk10k:IL_1753473,mesma lesão de um par do T1
+ISIC_1741107,milk10k,nv,milk10k:IL_2012452,par com imagem do T1
+ISIC_9313746,milk10k,nv,milk10k:IL_2088373,par com imagem do T1
+ISIC_6196546,milk10k,bkl,milk10k:IL_2090783,par com imagem do T1
+ISIC_3902522,milk10k,bcc,milk10k:IL_2131051,par com imagem do T1
+ISIC_0417486,milk10k,vasc,milk10k:IL_2160413,par com imagem do T1
+ISIC_7784876,milk10k,mel,milk10k:IL_2229268,par com imagem do T1
+ISIC_5173718,milk10k,nv,milk10k:IL_2247062,par com imagem do T1
+ISIC_7256008,milk10k,nv,milk10k:IL_2522638,par com imagem do T1
+ISIC_5175946,milk10k,nv,milk10k:IL_2526379,par com imagem do T1
+ISIC_9064583,milk10k,bcc,milk10k:IL_2564973,par com imagem do T1
+ISIC_5383160,milk10k,mel,milk10k:IL_2598820,mesma lesão de um par do T1
+ISIC_3039744,milk10k,bcc,milk10k:IL_2660318,par com imagem do T1
+ISIC_1593018,milk10k,mel,milk10k:IL_2759218,par com imagem do T1
+ISIC_0304794,milk10k,bcc,milk10k:IL_2788353,par com imagem do T1
+ISIC_0204323,milk10k,mel,milk10k:IL_2885420,par com imagem do T1
+ISIC_0197274,milk10k,bcc,milk10k:IL_2986546,par com imagem do T1
+ISIC_6383216,milk10k,nv,milk10k:IL_3035506,par com imagem do T1
+ISIC_7563152,milk10k,bkl,milk10k:IL_3148585,par com imagem do T1
+ISIC_4742379,milk10k,mel,milk10k:IL_3233038,par com imagem do T1
+ISIC_7222742,milk10k,nv,milk10k:IL_3312437,par com imagem do T1
+ISIC_4278930,milk10k,nv,milk10k:IL_3339713,par com imagem do T1
+ISIC_4478363,milk10k,mel,milk10k:IL_3376861,par com imagem do T1
+ISIC_4607582,milk10k,nv,milk10k:IL_3392979,par com imagem do T1
+ISIC_7201198,milk10k,nv,milk10k:IL_3423821,par com imagem do T1
+ISIC_1472934,milk10k,nv,milk10k:IL_3812964,mesma lesão de um par do T1
+ISIC_5092532,milk10k,nv,milk10k:IL_3852140,par com imagem do T1
+ISIC_1441039,milk10k,nv,milk10k:IL_3871649,mesma lesão de um par do T1
+ISIC_1362408,milk10k,nv,milk10k:IL_3968220,par com imagem do T1
+ISIC_4785619,milk10k,nv,milk10k:IL_3991500,par com imagem do T1
+ISIC_6887594,milk10k,nv,milk10k:IL_4061949,par com imagem do T1
+ISIC_6601126,milk10k,bkl,milk10k:IL_4180169,par com imagem do T1
+ISIC_6335386,milk10k,nv,milk10k:IL_4217663,par com imagem do T1
+ISIC_0512725,milk10k,nv,milk10k:IL_4320336,par com imagem do T1
+ISIC_9668892,milk10k,nv,milk10k:IL_4420927,par com imagem do T1
+ISIC_2842565,milk10k,bcc,milk10k:IL_4484576,par com imagem do T1
+ISIC_3698441,milk10k,mel,milk10k:IL_4522594,par com imagem do T1
+ISIC_1748084,milk10k,mel,milk10k:IL_4528445,par com imagem do T1
+ISIC_5645559,milk10k,nv,milk10k:IL_4541934,par com imagem do T1
+ISIC_4937672,milk10k,mel,milk10k:IL_4545799,par com imagem do T1
+ISIC_8469156,milk10k,mel,milk10k:IL_4610618,par com imagem do T1
+ISIC_2973033,milk10k,bcc,milk10k:IL_4674217,par com imagem do T1
+ISIC_8405809,milk10k,nv,milk10k:IL_4734157,par com imagem do T1
+ISIC_7018101,milk10k,nv,milk10k:IL_4739106,mesma lesão de um par do T1
+ISIC_2591258,milk10k,nv,milk10k:IL_4783389,par com imagem do T1
+ISIC_8331574,milk10k,nv,milk10k:IL_4807547,par com imagem do T1
+ISIC_2725046,milk10k,bcc,milk10k:IL_4826188,par com imagem do T1
+ISIC_6691035,milk10k,nv,milk10k:IL_4954108,par com imagem do T1
+ISIC_7892545,milk10k,bcc,milk10k:IL_5162996,par com imagem do T1
+ISIC_5554081,milk10k,nv,milk10k:IL_5226953,par com imagem do T1
+ISIC_4757362,milk10k,nv,milk10k:IL_5310552,par com imagem do T1
+ISIC_7917913,milk10k,nv,milk10k:IL_5361790,par com imagem do T1
+ISIC_4400687,milk10k,nv,milk10k:IL_5416595,par com imagem do T1
+ISIC_1803069,milk10k,vasc,milk10k:IL_5437959,par com imagem do T1
+ISIC_2867998,milk10k,mel,milk10k:IL_5470919,par com imagem do T1
+ISIC_0907266,milk10k,nv,milk10k:IL_5534064,par com imagem do T1
+ISIC_1244447,milk10k,bkl,milk10k:IL_5885697,par com imagem do T1
+ISIC_4505155,milk10k,bkl,milk10k:IL_5924727,par com imagem do T1
+ISIC_6806266,milk10k,nv,milk10k:IL_6113513,mesma lesão de um par do T1
+ISIC_3105211,milk10k,nv,milk10k:IL_6119017,mesma lesão de um par do T1
+ISIC_0734414,milk10k,mel,milk10k:IL_6190273,par com imagem do T1
+ISIC_9756878,milk10k,nv,milk10k:IL_6294894,par com imagem do T1
+ISIC_1002134,milk10k,bcc,milk10k:IL_6305058,par com imagem do T1
+ISIC_5714835,milk10k,mel,milk10k:IL_6367899,par com imagem do T1
+ISIC_6455558,milk10k,nv,milk10k:IL_6493670,mesma lesão de um par do T1
+ISIC_1828562,milk10k,nv,milk10k:IL_6528772,par com imagem do T1
+ISIC_4237744,milk10k,mel,milk10k:IL_6594915,par com imagem do T1
+ISIC_9568577,milk10k,bkl,milk10k:IL_6781250,par com imagem do T1
+ISIC_8072870,milk10k,nv,milk10k:IL_6877500,par com imagem do T1
+ISIC_6045266,milk10k,bkl,milk10k:IL_6923101,par com imagem do T1
+ISIC_0796884,milk10k,bcc,milk10k:IL_7037144,par com imagem do T1
+ISIC_2516006,milk10k,df,milk10k:IL_7048697,par com imagem do T1
+ISIC_4363100,milk10k,nv,milk10k:IL_7119358,par com imagem do T1
+ISIC_9473743,milk10k,nv,milk10k:IL_7161164,par com imagem do T1
+ISIC_3888868,milk10k,bcc,milk10k:IL_7257549,par com imagem do T1
+ISIC_8718627,milk10k,nv,milk10k:IL_7336420,par com imagem do T1
+ISIC_0529050,milk10k,mel,milk10k:IL_7337548,par com imagem do T1
+ISIC_6508737,milk10k,mel,milk10k:IL_7343687,par com imagem do T1
+ISIC_5151650,milk10k,bkl,milk10k:IL_7366789,par com imagem do T1
+ISIC_7372306,milk10k,bcc,milk10k:IL_7390451,par com imagem do T1
+ISIC_0450405,milk10k,mel,milk10k:IL_7728515,par com imagem do T1
+ISIC_8040056,milk10k,nv,milk10k:IL_7748792,par com imagem do T1
+ISIC_9314988,milk10k,mel,milk10k:IL_7776023,par com imagem do T1
+ISIC_0474474,milk10k,nv,milk10k:IL_8113008,par com imagem do T1
+ISIC_7116818,milk10k,nv,milk10k:IL_8171092,par com imagem do T1
+ISIC_6689453,milk10k,mel,milk10k:IL_8173383,par com imagem do T1
+ISIC_8472745,milk10k,bkl,milk10k:IL_8258563,par com imagem do T1
+ISIC_3670069,milk10k,mel,milk10k:IL_8339852,mesma lesão de um par do T1
+ISIC_5493908,milk10k,bcc,milk10k:IL_8461423,par com imagem do T1
+ISIC_1074795,milk10k,mel,milk10k:IL_8663536,par com imagem do T1
+ISIC_1607500,milk10k,nv,milk10k:IL_8666651,mesma lesão de um par do T1
+ISIC_2568976,milk10k,bkl,milk10k:IL_8716299,par com imagem do T1
+ISIC_6958882,milk10k,nv,milk10k:IL_8739695,par com imagem do T1
+ISIC_0373682,milk10k,nv,milk10k:IL_8931844,par com imagem do T1
+ISIC_1845922,milk10k,mel,milk10k:IL_8984570,par com imagem do T1
+ISIC_1715773,milk10k,nv,milk10k:IL_9109267,par com imagem do T1
+ISIC_1364975,milk10k,bcc,milk10k:IL_9120764,par com imagem do T1
+ISIC_1396159,milk10k,nv,milk10k:IL_9130306,par com imagem do T1
+ISIC_8500794,milk10k,nv,milk10k:IL_9149489,par com imagem do T1
+ISIC_2283574,milk10k,nv,milk10k:IL_9157797,par com imagem do T1
+ISIC_7939848,milk10k,bcc,milk10k:IL_9173239,par com imagem do T1
+ISIC_4641356,milk10k,mel,milk10k:IL_9231229,par com imagem do T1
+ISIC_8876261,milk10k,ak,milk10k:IL_9294619,par com imagem do T1
+ISIC_2505856,milk10k,bcc,milk10k:IL_9331537,par com imagem do T1
+ISIC_3003648,milk10k,bkl,milk10k:IL_9348044,par com imagem do T1
+ISIC_6160419,milk10k,mel,milk10k:IL_9375634,par com imagem do T1
+ISIC_0097262,milk10k,nv,milk10k:IL_9395839,par com imagem do T1
+ISIC_2754763,milk10k,df,milk10k:IL_9413629,par com imagem do T1
+ISIC_5823053,milk10k,bkl,milk10k:IL_9440413,par com imagem do T1
+ISIC_2485685,milk10k,bkl,milk10k:IL_9473685,par com imagem do T1
+ISIC_6352343,milk10k,nv,milk10k:IL_9489077,mesma lesão de um par do T1
+ISIC_5412380,milk10k,mel,milk10k:IL_9689352,par com imagem do T1
+ISIC_3797260,milk10k,nv,milk10k:IL_9880889,par com imagem do T1
+ISIC_0950510,milk10k,nv,milk10k:IL_9961015,par com imagem do T1

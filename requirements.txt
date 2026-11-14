@@ -14,3 +14,4 @@ scipy==1.18.1
 lightgbm==4.7.0
 pillow==13.0.0
 requests==2.34.2
+opencv-python-headless==5.0.0.93

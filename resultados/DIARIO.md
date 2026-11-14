@@ -808,3 +808,44 @@ teste ISIC 2019); em T1, 0,90–0,95 também é a mesma lesão (fotos repetidas 
 Conclusão: T2 do jeito que está superestimaria o desempenho; T1 pouco; validação um pouco otimista, mas
 igual para todos os modelos (comparação entre etapas continua válida). Proposta, ainda não aplicada:
 limpar T1/T2 tirando as imagens com vizinho no treino acima do limiar, sem retreinar. Testes seguem fechados.
+
+---
+
+## 14/11 (tarde) — Divisão v2 sem imagens repetidas e retreino de tudo
+
+Decisão do Lucas: "esse tipo de vazamento é inaceitável" → refazer a divisão e retreinar todos os modelos.
+
+**Detecção de duplicatas, versão final** (`python -m dermato.duplicatas pares` → `splits/pares_duplicatas.csv.gz`):
+par = **cosseno do PanDerm ≥ 0,90** (mesma lesão) **ou ≥ 25 pontos ORB coincidentes após RANSAC** (mesma
+foto ou mesma lesão com outro zoom/ângulo/cor). O ORB foi necessário porque o MILK10k recolore e recorta
+imagens do arquivo ISIC, e aí o cosseno cai para 0,7–0,88. Calibração do ORB: duplicatas conhecidas,
+mediana de 312 pontos (23 de 26 ≥ 25); 200 pares de lesões diferentes parecidas, mediana 0 (1 de 200 ≥ 25);
+conferência visual de 24 pares só-ORB perto do limiar: praticamente todos a mesma lesão.
+Testados e descartados: pHash; correlação de pixels em cinza (nevos lisos diferentes dão > 0,95);
+correlação dos detalhes (passa-alta), que perde a mesma lesão com outro enquadramento.
+Candidatos ao ORB: 10 vizinhos mais próximos pelo PanDerm + pares com cinza parecido (522 mil pares).
+Resultado: 18.310 pares (10.498 pelo PanDerm, 7.812 só pelo ORB).
+
+**Vazamento real da v1** (imagens com par no treino): T1 248/1.511 (16%), **T2 1.085/2.340 (46%)**,
+validação 717/5.821 (12%). Bem maior que a estimativa só pelo PanDerm (7% / 28% / 7%).
+Validação v1 sem as imagens vazadas (previsões salvas): todos caem ~1–1,5 ponto de bal_acc e ~1,5–3 de spec95,
+a ordem entre modelos não muda (E0 0,696→0,681; E1 0,769→0,756; E2_384 0,768→0,753; E3 0,764→0,749;
+E4 0,757→0,741). Nas imagens vazadas os modelos acertavam 0,79–0,88.
+
+**Divisão v2** (`dermato/preparar.py`, `aplicar_duplicatas`):
+1. T1 fica inteiro (comparação com os dermatologistas); saem do conjunto as 478 imagens de outras bases que
+   formam par com o T1 e as fotos da mesma lesão delas (`splits/removidas_duplicatas.csv`).
+2. Grupo = componente conexo dos pares + grupos originais (paciente/lesão).
+3. T2 = metade, por grupo, dos grupos que só existem no teste ISIC 2019 (2.187 imagens).
+4. Validação = 3 de 20 dobras por grupo (5.319); grupos maiores que meia dobra (um encadeamento de
+   ~3.000 imagens de pacientes do ISIC 2020) vão direto para o treino.
+5. `montar_splits` agora falha se algum par cruzar splits. Checagem: **0 imagens com par no treino em T1,
+   T2 e validação; maior cosseno do PanDerm com o treino = 0,8999.**
+
+Resultados da v1 arquivados em `resultados/v1_com_vazamento/` (experimentos, previsões, pesos, divisão).
+
+**Retreino** (`scripts_dermato/retreinar_v2.py`): as 15 rodadas finais com as configurações vencedoras da v1
+(E0, E1 ×3 sementes, E2_384 ×3, E3 ×3, E4, E0_busca, E1r, E2 224) + E5 com os mesmos membros. Limitação:
+os parâmetros foram escolhidos pelo Optuna numa validação com 12% de vazamento; refazer as 8 buscas levaria
+dias. Como o vazamento inflava todos os modelos quase igual, a escolha de parâmetros deve ter sido pouco
+afetada, mas isso não está provado.

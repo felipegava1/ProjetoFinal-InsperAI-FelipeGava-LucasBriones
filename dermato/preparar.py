@@ -59,6 +59,64 @@ def ler_isic2018_teste():
     return pd.DataFrame({"isic_id": gt["image"], "dx_ham": onehot(gt, cols).str.lower()})
 
 
+PARES = SPLITS.parent / "pares_duplicatas.csv.gz"     # gerado por python -m dermato.duplicatas pares
+REMOVIDAS = SPLITS.parent / "removidas_duplicatas.csv"
+LIM_LESAO = 0.92     # cosseno do PanDerm para "mesma lesão" ao estender a remoção ligada ao T1
+# todo par do arquivo (cos do PanDerm >= 0,90 ou mesma foto pelo ORB) junta as duas imagens no mesmo grupo
+
+
+def _componentes(n, a, b, grupos):
+    """Componentes conexos de um grafo com arestas (a, b) mais 'mesmo valor em grupos'."""
+    from scipy.sparse import coo_matrix
+    from scipy.sparse.csgraph import connected_components
+    g = pd.factorize(grupos)[0]
+    lin = np.r_[a, np.arange(n)]
+    col = np.r_[b, n + g]
+    A = coo_matrix((np.ones(len(lin)), (lin, col)), shape=(n + g.max() + 1,) * 2)
+    return connected_components(A, directed=False)[1][:n]
+
+
+def aplicar_duplicatas(df):
+    """Divisão v2 (14/11): agrupa imagens quase idênticas para que a mesma lesão não caia em dois splits.
+
+    1. T1 (ISIC 2018 teste) fica inteiro, para a comparação com os dermatologistas. Sai do conjunto toda
+       imagem de outra base que forma par com uma imagem do T1 e as fotos da mesma lesão que ela
+       (mesmo lesion_id, cos >= 0,92 ou mesma foto pelo ORB, encadeado).
+    2. O grupo de cada imagem passa a ser o componente conexo dos pares unido aos grupos originais
+       (paciente/lesão). O sorteio de T2 e da validação usa esse grupo.
+    """
+    if not PARES.exists():
+        raise FileNotFoundError(f"{PARES} não existe: rode python -m dermato.duplicatas pares")
+    df = df.reset_index(drop=True)
+    n = len(df)
+    pos = pd.Series(np.arange(n), index=df["isic_id"])
+    p = pd.read_csv(PARES)
+    p = p[p["a"].isin(pos.index) & p["b"].isin(pos.index)]
+    a, b, c = pos[p["a"]].values, pos[p["b"]].values, p["cos"].values
+    t1 = (df["split"] == "t1").to_numpy()
+
+    # 1. remoção ligada ao T1
+    lesao = df["grupo"].where(~df["grupo"].str.startswith("isic2020:"), df["isic_id"])   # 2020 é paciente
+    forte = (c >= LIM_LESAO) | (p["criterio"].values == "orb")
+    comp_lesao = _componentes(n, a[forte], b[forte], lesao)
+    vizinho = np.zeros(n, bool)
+    lig = t1[a] ^ t1[b]                                    # pares T1 x não-T1
+    vizinho[np.where(t1[a], b, a)[lig]] = True
+    marcados = np.isin(comp_lesao, np.unique(comp_lesao[t1 | vizinho]))
+    sai = marcados & ~t1
+    removidas = df.loc[sai, ["isic_id", "base", "dx", "grupo"]].assign(
+        motivo=np.where(vizinho[sai], "par com imagem do T1", "mesma lesão de um par do T1"))
+    df = df.loc[~sai].reset_index(drop=True)
+
+    # 2. grupos unidos
+    n = len(df)
+    pos = pd.Series(np.arange(n), index=df["isic_id"])
+    p = p[p["a"].isin(pos.index) & p["b"].isin(pos.index)]
+    comp = _componentes(n, pos[p["a"]].values, pos[p["b"]].values, df["grupo"])
+    df["grupo"] = pd.Series(comp).map(lambda k: f"g{k:05d}").values
+    return df, removidas.reset_index(drop=True)
+
+
 def montar_splits():
     linhas = []
     # ---- ISIC 2019 treino
@@ -85,13 +143,9 @@ def montar_splits():
         "sexo": meta_t1["sex"].reindex(t1["isic_id"]).values,
         "local": meta_t1["anatom_site_general"].reindex(t1["isic_id"]).values}))
     d = d[~d["image"].isin(t1["isic_id"]) & d["dx"].isin(CLASSES)].reset_index(drop=True)
-    metade = np.zeros(len(d), dtype=int)
-    for i, (_, idx) in enumerate(StratifiedKFold(2, shuffle=True, random_state=SEED).split(d, d["dx"])):
-        metade[idx] = i
-    linhas.append(pd.DataFrame({
-        "isic_id": d["image"], "base": np.where(metade == 0, "isic2019_test_a", "isic2019_test_b"),
+    linhas.append(pd.DataFrame({                              # metades A/B decididas por grupo, mais abaixo
+        "isic_id": d["image"], "base": "isic2019_test",
         "dx": d["dx"], "grupo": "isic2019test:" + d["image"],   # o teste não informa lesion_id
-        "split": np.where(metade == 0, None, "t2"),
         "idade": d["age_approx"], "sexo": d["sex"], "local": d["anatom_site_general"]}))
 
     # ---- ISIC 2020 (só diagnóstico específico, sem as duplicatas declaradas)
@@ -126,7 +180,29 @@ def montar_splits():
     df["sexo"] = df["sexo"].where(df["sexo"].isin(["male", "female"]))
     df.loc[df["dx_ham"].isna() & df["dx"].notna(), "dx_ham"] = df["dx"].map(PARA_HAM)
 
+    # ---- imagens quase idênticas (mesma foto ou mesma lesão com outro ID): ver dermato/duplicatas.py
+    df, removidas = aplicar_duplicatas(df)
+
+    # ---- teste oficial do ISIC 2019: metade A (treino) e B (T2), sorteadas por grupo. Grupos que também
+    #      têm imagens de outras bases ficam na metade A, para o T2 não ter nenhuma lesão vista no treino.
+    t19 = (df["base"] == "isic2019_test").to_numpy()
+    so_teste = df.groupby("grupo")["base"].transform(lambda b: (b == "isic2019_test").all()).to_numpy()
+    metade = np.zeros(len(df), dtype=int)
+    cand = np.where(t19 & so_teste)[0]
+    sub = df.iloc[cand]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        _, idx_b = next(StratifiedGroupKFold(2, shuffle=True, random_state=SEED).split(sub, sub["dx"], sub["grupo"]))
+    metade[cand[idx_b]] = 1
+    df.loc[t19, "base"] = np.where(metade[t19] == 1, "isic2019_test_b", "isic2019_test_a")
+    df.loc[t19 & (metade == 1), "split"] = "t2"
+
     # ---- validação: 15% (3 de 20 dobras) do conjunto de treino, por grupo
+    # grupos maiores que meia dobra (o encadeamento de duplicatas + pacientes do ISIC 2020 forma um grupo
+    # de ~3.700 imagens) vão direto para o treino: na validação distorceriam a composição dela
+    tam = df.groupby("grupo")["isic_id"].transform("size")
+    limite = df["split"].isna().sum() / 40
+    df.loc[df["split"].isna() & (tam > limite), "split"] = "train"
     pool = df["split"].isna().to_numpy()
     sgkf = StratifiedGroupKFold(20, shuffle=True, random_state=SEED)
     dobra = np.zeros(pool.sum(), dtype=int)
@@ -137,14 +213,24 @@ def montar_splits():
             dobra[idx] = i
     df.loc[pool, "split"] = np.where(dobra < 3, "val", "train")
 
-    # sem vazamento de grupo entre treino e validação
-    g = df[df["split"].isin(["train", "val"])].groupby("grupo")["split"].nunique()
-    assert (g == 1).all(), "grupo dividido entre treino e validação"
+    # sem vazamento de grupo entre treino, validação e T2 (T1 é por imagem; tratado em aplicar_duplicatas)
+    g = df[df["split"].isin(["train", "val", "t2"])].groupby("grupo")["split"].nunique()
+    assert (g == 1).all(), "grupo dividido entre splits"
+    # nenhum par quase idêntico entre splits diferentes (exceto T1 x T2, que nunca treinam)
+    if PARES.exists():
+        p = pd.read_csv(PARES)
+        sp = df.set_index("isic_id")["split"]
+        a, b = sp.reindex(p["a"]).values, sp.reindex(p["b"]).values
+        ok = pd.notna(a) & pd.notna(b)
+        cruz = ok & (a != b) & ~(np.isin(a, ["t1", "t2"]) & np.isin(b, ["t1", "t2"]))
+        assert not cruz.any(), f"{cruz.sum()} pares quase idênticos entre splits"
 
     cols = ["isic_id", "base", "split", "dx", "dx_ham", "grupo", "idade", "sexo", "local"]
     df = df[cols].sort_values(["split", "base", "isic_id"]).reset_index(drop=True)
     SPLITS.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(SPLITS, index=False)
+    removidas.to_csv(REMOVIDAS, index=False)
+    print(f"removidas por duplicata do T1: {len(removidas)} -> {REMOVIDAS}")
     pd.set_option("display.width", 200)
     print(pd.crosstab(df["base"], df["split"], margins=True))
     print(pd.crosstab(df["dx"], df["split"], margins=True))
