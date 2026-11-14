@@ -54,7 +54,11 @@ def carregar_modelo(rid, dispositivo):
     if cfg.get("emb"):
         raise SystemExit("Modelos com vetores do PanDerm (E4) ainda não são suportados aqui.")
     model, mean, std, _, _ = construir(cfg | {"pesos_cnn": None, "pretrained": False})
-    estado = torch.load(achar(f"{rid}.pt", "modelos"), map_location="cpu", weights_only=True)
+    pesos = achar(f"{rid}.pt", "modelos")
+    if pesos.stat().st_size < 1024:   # só o ponteiro do Git LFS, sem o arquivo de verdade
+        raise SystemExit(f"{pesos} é um ponteiro do Git LFS ({pesos.stat().st_size} bytes), não os pesos. "
+                         "Rode: git lfs install && git lfs pull")
+    estado = torch.load(pesos, map_location="cpu", weights_only=True)
     model.load_state_dict({k: v.float() for k, v in estado.items()})
     calib = np.load(achar(f"{rid}.npz", "previsoes"), allow_pickle=True)
     return model.to(dispositivo).eval(), cfg, mean, std, calib

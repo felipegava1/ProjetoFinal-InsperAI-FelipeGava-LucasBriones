@@ -35,11 +35,11 @@ PADRAO = dict(
     # fusão (E3/E4)
     juncao="concat", hidden=512, lr_vit_mult=1.0, ramos_congelados_epocas=0, pesos_cnn=None,
     emb=None, emb_dropout=0.0, emb_norm=False,
-    seed=SEED, tta=8, salvar_modelo=False, rapido=False, workers=12,
+    seed=SEED, tta=8, salvar_modelo=False, rapido=False, workers=10,
 )
 
 
-def limitar_vram(fracao=0.90):
+def limitar_vram(fracao=0.80):
     """Teto de memória da GPU para o PyTorch: se uma configuração não couber, dá erro de memória na
     hora, em vez de o driver do Windows passar a usar a RAM do sistema (10x mais lento, sem aviso)."""
     torch.cuda.set_per_process_memory_fraction(fracao)

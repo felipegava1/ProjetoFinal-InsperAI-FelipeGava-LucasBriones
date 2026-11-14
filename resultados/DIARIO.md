@@ -531,3 +531,127 @@ Pedido: deixar o modelo usável por quem clonar o repositório (ex.: Felipe).
 - Pesos (23–107 MB; o da E1 passa do limite de 100 MB do GitHub) ficam fora do git
   (`resultados/modelos/` no .gitignore); somas SHA-256 em `resultados/modelos_sha256.txt`. Cópias
   prontas para publicar em `F:\dermato\pesos_para_compartilhar\`.
+
+---
+
+## 13/11 11:45 — E2 a 384 px: VRAM transbordando de novo; teto mais baixo
+
+A primeira tentativa da E2_384 fez a época 2 em 6,6 min, mas as épocas 3 e 4 levaram **~21 min cada**.
+Primeiro atribuí a lentidão aos meus testes do `prever.py` na CPU (que de fato coincidiram com a
+época 3), mas a época 4 também foi lenta depois deles. Diagnóstico com `nvidia-smi`: **11,9 de 12,2 GB**
+de VRAM e só **109 W** de consumo com "97% de uso" (a GPU trabalhando de verdade passa de 200 W) →
+o driver do Windows estava usando a RAM do sistema como extensão da VRAM, de novo.
+- Causa: o teto de 90% vale só para o PyTorch, mas este PC já ocupa **~1,4 GB de VRAM com os
+  programas abertos** (wallpaper animado, Discord, iCUE…) + o contexto da CUDA. A época 2 foi rápida
+  porque o cache do PyTorch ainda não tinha crescido até o teto.
+- Também: só 3,7 GB de memória virtual comprometida livre (perto do erro 1455 de ontem).
+- Correções: **teto de VRAM 80%** (~9,8 GB; esta configuração mede ~8 GB) e **10 processos de
+  carregamento** em vez de 12 (a MaxViT a 384 px é limitada pela GPU, ~94 img/s).
+- A tentativa (semente, época 4/9, ainda em 0,697 sem TTA) foi interrompida — terminar a 21 min/época
+  custaria ~1h45, recomeçar ~1 h — marcada como falha e reenfileirada com a mesma configuração.
+  Orçamento da E2_384: 5 h a partir de agora (já tinha perdido ~1 h).
+- Lição registrada: não rodar testes pesados na CPU durante treinos (no `prever.py`, a CPU usa
+  todos os núcleos e tira processador dos processos de carregamento).
+
+---
+
+## 13/11 12:50 — E2 a 384 px: arquitetura × resolução (comparação controlada)
+
+Primeira tentativa da E2_384 (semente = mesma configuração da vencedora da E1/E2), 60 min, épocas
+estáveis em 6,5 min depois do teto de VRAM de 80% (consumo da GPU 220 W × 109 W antes):
+**bal_acc 0,7565, spec95 0,774, AUC mel 0,928, AUC mal 0,950, ECE 0,310**.
+
+Mesma configuração, só muda rede e/ou resolução (validação, TTA 8):
+
+| Modelo | bal_acc | spec95 | mel | scc | df | bkl | nv | conf. bkl/ak/scc |
+|---|---|---|---|---|---|---|---|---|
+| E2 MaxViT 224 px (final) | 0,746 | 0,709 | 0,634 | 0,658 | 0,787 | 0,708 | 0,869 | 0,180 |
+| E2 MaxViT **384 px** | 0,7565 | **0,774** | 0,737 | **0,708** | 0,809 | 0,643 | 0,847 | 0,179 |
+| E1 ConvNeXt 384 px (final) | **0,769** | 0,773 | **0,770** | 0,663 | **0,915** | 0,658 | 0,803 | **0,167** |
+
+Conclusões:
+1. **Resolução explica a maior parte da distância entre E1 e E2.** Na própria MaxViT, 224 → 384 px:
+   +10 pontos em melanoma, +6,5 em spec95, +5 em scc. É o mesmo efeito visto na E1.
+2. **Na mesma resolução, as arquiteturas empatam na triagem** (spec95 0,774 × 0,773, dentro do ruído de
+   ~2 pontos). ConvNeXt à frente em bal_acc (+1,2), melanoma (+3) e dermatofibroma (+11, mas só 47
+   imagens: ±5 pontos de incerteza); MaxViT melhor em carcinoma espinocelular (+4,5).
+3. **Hipótese da E2 segue não confirmada**: a confusão bkl/ak/scc não muda com a resolução (0,180 →
+   0,179); atenção em cada estágio não resolveu essa confusão nesta base.
+4. Erram em classes diferentes (MaxViT: scc, nv; ConvNeXt: mel, df) → argumento a favor do ensemble E5.
+
+---
+
+## 13/11 16:55 — E2 a 384 px: busca encerrada
+
+7 tentativas (5 completas, 1 cortada, 1 falha da VRAM) em ~5 h; ~55 min por tentativa completa.
+
+| # | bal_acc | spec95 | lr | lote | épocas | gama | aug | mixup | nevos |
+|---|---|---|---|---|---|---|---|---|---|
+| **3** | **0,768** | 0,735 | 2,8e-4 | 16 | 9 | 2,8 | leve | 0,23 | 6.000 |
+| 6 | 0,763 | 0,766 | 1,6e-4 | 32 | 10 | 4,8 | leve | 0,20 | todos |
+| 1 (semente) | 0,756 | **0,774** | 2,6e-4 | 16 | 9 | 3,0 | leve | 0,26 | todos |
+| 2 | 0,756 | 0,764 | 3,4e-4 | 16 | 8 | 3,2 | média | 0,38 | todos |
+| 5 | 0,747 | 0,725 | 3,9e-4 | 16 | 6 | 2,9 | média | 0,04 | 6.000 |
+
+Leitura:
+- Vencedora pela acurácia balanceada: **#3 (0,768)**, praticamente empatada com a E1 (0,769) — mas
+  com spec95 menor (0,735). As cinco completas ficam entre 0,747 e 0,768: com 384 px, a MaxViT é
+  pouco sensível aos parâmetros dentro desta faixa estreitada.
+- **Conflito de critério**: a melhor bal_acc (#3) não é a melhor spec95 (#1, 0,774). O protocolo usa
+  bal_acc para escolher; registro aqui que, para o uso de triagem (especificidade a 95% de
+  sensibilidade), a #1 seria a escolha. Vale reportar as duas no notebook.
+- Gama alto (4,8, #6) não repetiu na MaxViT o ganho que deu no ConvNeXt (0,763 × 0,768 da #3 com 2,8).
+- Limitar nevos a 6.000 apareceu nas duas extremidades (#3 melhor, #5 pior): sem efeito claro.
+
+Retreino da #3 como `E2_384_final_s42` em andamento; depois retreino da E1r (gama 4,5) e E3 → E4 → E5.
+
+---
+
+## 13/11 18:10 — E1r retreinada NÃO reproduziu: ruído maior do que eu estimava (correção)
+
+`E1r_final_s42` (mesma configuração da tentativa #2: gama 4,5) deu **bal_acc 0,7646**, spec95 0,770,
+AUC mel 0,933 — contra **0,7753** / 0,780 na tentativa. Até aqui o ConvNeXt reproduzia exatamente
+(E1: 0,7692 nas duas vezes). Causa: às 11:45 reduzi os processos de carregamento de 12 para 10 (teto de
+VRAM). Cada processo tem sua própria semente de augmentation; mudar o número de processos muda os
+recortes/flips/mixup de cada imagem. Resultado: o mesmo modelo, com outra sequência aleatória de
+augmentation, varia **~1 ponto de bal_acc**.
+
+Correções no que registrei antes:
+- **Ruído entre rodadas ≈ 1 ponto de bal_acc** (não ~0,3: aquela estimativa vinha de rodadas com a mesma
+  sequência de augmentation, só com não-determinismo da GPU). Para spec95 continuo usando ~2 pontos.
+- **O ganho do gama 4,5 (+0,6) está dentro do ruído**: não dá para afirmar que melhorou a E1. A
+  conclusão correta é "gama 3–4,5 empatam".
+- O mesmo vale para E1 × E2 a 384 px (0,769 × 0,768): empate.
+- Isso reforça o passo do plano de rodar os finalistas com 3 sementes e comparar média ± desvio.
+
+Efeito prático: a fila escolhe a base da E3 pela bal_acc dos modelos finais salvos → **E1 original
+(0,7692)**, não a E1r (0,7646). Escolha razoável: as duas empatam.
+**18:06 — E3 iniciada** partindo de `E1_final_s42`, semeada com a vencedora da E1 + junção por concatenação, Swin a 0,5× o lr do ConvNeXt, 1 época com os ramos congelados, cabeça de 512 (mesma semeadura planejada às 08:30).
+
+---
+
+## 13/11 21:10 — E3 (fusão ConvNeXt + Swin): busca encerrada
+
+10 tentativas em 3 h (6 completas, 4 cortadas). O ramo ConvNeXt partiu de `E1_final_s42`.
+
+| # | bal_acc | spec95 | res | junção | lr | Swin × lr | ramos congelados | cabeça | perda |
+|---|---|---|---|---|---|---|---|---|---|
+| **7** | **0,767** | 0,756 | 384 | **atenção cruzada** | 5,3e-5 | 0,78 | 1 época | 256 | focal |
+| 0 | 0,757 | 0,721 | 288 | porta | 1,0e-4 | 0,20 | 0 | 256 | ponderada |
+| 1 (semente) | 0,753 | **0,773** | 384 | concatenação | 2,6e-4 | 0,50 | 1 época | 512 | focal |
+| 3 | 0,747 | 0,718 | 224 | porta | 1,3e-5 | 0,15 | 3 | 512 | focal |
+| 4 | 0,746 | 0,722 | 224 | atenção | 2,4e-5 | 0,17 | 2 | 512 | focal |
+| 2 | 0,707 | 0,717 | 288 | concatenação | 3,5e-4 | 0,59 | 0 | 256 | ce |
+
+Leitura:
+- **A fusão não superou a E1 sozinha**: melhor E3 0,767 × E1 0,769 (empate, dentro do ruído de ~1
+  ponto); spec95 0,756–0,773 × 0,773. Hipótese da E3 ("dois olhares separados se complementam mais
+  do que misturados") **não confirmada** nesta forma — o ramo Swin a 224 px não acrescentou informação
+  que o ConvNeXt a 384 px já não tivesse.
+- Padrão claro de lr: como o ramo ConvNeXt já parte treinado (E1), **lr baixo (5e-5)** funcionou melhor
+  que o da E1 (2,6e-4, tentativa semeada): com lr alto o ConvNeXt "esquece" parte do que aprendeu.
+  A vencedora usa o mesmo lr base para os dois ramos praticamente (Swin 0,78×).
+- 384 px de novo nas melhores; 224 px sempre atrás (o ramo ConvNeXt perde a resolução que o fazia bom).
+- Junção por atenção cruzada venceu, mas com só 1–2 tentativas por tipo de junção não dá para
+  separar o efeito da junção do efeito do lr.
+- Próximo: E4 adiciona o vetor do PanDerm como terceiro ramo (3 h).

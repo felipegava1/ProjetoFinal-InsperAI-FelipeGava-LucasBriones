@@ -17,6 +17,48 @@
 Raciocínio, mudanças e números de cada etapa: `resultados/DIARIO.md`; uma linha por treino em
 `resultados/experimentos.csv`; todas as tentativas das buscas em `resultados/optuna.db`.
 
+### Pesos dos modelos e Git LFS
+
+Os arquivos de pesos (`resultados/modelos/*.pt`, de 23 a 107 MB) são grandes demais para o git
+comum (o GitHub recusa arquivos acima de 100 MB). Por isso eles ficam no **Git LFS** (Large File
+Storage): o repositório guarda só um "ponteiro" de poucos bytes e o arquivo de verdade fica no
+armazenamento LFS do GitHub, baixado junto com o clone.
+
+| Arquivo | Tamanho | Modelo |
+|---|---|---|
+| `E0_final_s42.pt` | 23 MB | E0, receita atual (EfficientNetV2-B0, 224 px) |
+| `E0_busca_final_s42.pt` | 23 MB | E0 com parâmetros otimizados |
+| `E1_final_s42.pt` | 107 MB | E1, ConvNeXt-Tiny 384 px (melhor modelo) |
+
+**Antes de clonar (uma vez por computador):**
+```
+git lfs install
+```
+O Git LFS já vem com o Git para Windows; no Linux/macOS, instale o pacote `git-lfs` antes.
+
+**Clonar a branch com os pesos:**
+```
+git clone -b dermatoscopia-pytorch https://github.com/felipegava1/ProjetoFinal-InsperAI-FelipeGava-LucasBriones
+```
+
+**Se o clone já foi feito sem o LFS**, os `.pt` vêm como arquivos de texto de ~130 bytes (os
+ponteiros) e o `prever.py` falha ao carregar. Para baixar os arquivos de verdade:
+```
+git lfs install
+git lfs pull
+```
+
+**Conferir se os pesos estão íntegros:** `git lfs ls-files` lista os três arquivos; os códigos devem
+bater com `resultados/modelos_sha256.txt` (no Windows: `certutil -hashfile resultados\modelos\E1_final_s42.pt SHA256`).
+
+**Cota:** a conta gratuita do GitHub tem 1 GB de armazenamento e 1 GB de download por mês para
+arquivos LFS (do dono do repositório). Os três pesos somam ~153 MB, ou seja, cerca de 6 clones
+completos por mês. Para clonar sem baixar os pesos: `GIT_LFS_SKIP_SMUDGE=1 git clone ...`
+(no PowerShell: `$env:GIT_LFS_SKIP_SMUDGE=1` antes do clone).
+
+**Adicionar um modelo novo** (ex.: depois de treinar a E2): copie o `.pt` para `resultados/modelos/`
+e faça `git add` normalmente — o `.gitattributes` já manda todo `resultados/modelos/*.pt` para o LFS.
+
 ### Usar um modelo treinado (sem as bases de dados)
 
 1. Dependências (Python 3.12):
@@ -25,10 +67,8 @@ Raciocínio, mudanças e números de cada etapa: `resultados/DIARIO.md`; uma lin
    pip install -r requirements.txt
    ```
    Sem GPU: `pip install torch torchvision` e use `--cpu` abaixo.
-2. Os pesos (`E1_final_s42.pt`, `E0_busca_final_s42.pt`, `E0_final_s42.pt`) já vêm em
-   `resultados/modelos/` via **Git LFS**: instale o LFS uma vez (`git lfs install`) antes de clonar,
-   ou rode `git lfs pull` num clone já feito (confira com `resultados/modelos_sha256.txt`). As
-   calibrações (tau e limiar de triagem) estão em `resultados/previsoes/`.
+2. Confira que os pesos vieram de verdade em `resultados/modelos/` (seção **Pesos dos modelos e
+   Git LFS** acima). As calibrações (tau e limiar de triagem) estão em `resultados/previsoes/`.
 3. Rode:
    ```
    python -m dermato.prever caminho/para/imagens --modelo E1_final_s42 [--meta metadados.csv] [--cpu]
