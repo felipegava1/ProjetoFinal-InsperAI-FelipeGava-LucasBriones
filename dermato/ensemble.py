@@ -67,6 +67,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("ids", nargs="+")
     ap.add_argument("--testes", action="store_true")
+    ap.add_argument("--nome", default="E5_ensemble", help="id do ensemble (arquivos de previsão e linha do experimento)")
     args = ap.parse_args()
 
     df = ler_splits()
@@ -101,23 +102,23 @@ def main():
                 linhas.append({"membros": "+".join(sub), "metodo": metodo, "temperatura": T,
                                "extra": json.dumps({k2: v for k2, v in extra.items() if k2 != "modelo"})} | r)
     tab = pd.DataFrame(linhas).sort_values("bal_acc", ascending=False)
-    tab.to_csv(RESULTADOS / "ensemble_busca.csv", index=False)
+    tab.to_csv(RESULTADOS / ("ensemble_busca.csv" if args.nome == "E5_ensemble" else f"ensemble_busca_{args.nome}.csv"), index=False)
     pd.set_option("display.width", 250)
     print(tab[["membros", "metodo", "bal_acc", "spec95", "mel_auc", "mal_auc", "ece", "temperatura"]]
           .head(15).round(4).to_string(index=False))
 
     melhor = tab.iloc[0]
     print(f"\nVencedor (metade B da validação): {melhor['membros']} / {melhor['metodo']}")
-    registrar({"id": "E5_ensemble", "etapa": "E5", "familia": f"ensemble_{melhor['metodo']}", "seed": SEED,
+    registrar({"id": args.nome, "etapa": "E5", "familia": f"ensemble_{melhor['metodo']}", "seed": SEED,
                "status": "ok", "config": json.dumps({"membros": melhor["membros"], "metodo": melhor["metodo"],
                                                      "temperatura": melhor["temperatura"], "extra": melhor["extra"]})}
               | {f"val_{k}": melhor[k] for k in ["bal_acc", "spec95", "mel_auc", "mal_auc", "ece", "tau",
                                                  "triagem_sens", "triagem_spec"]})
     # previsões do ensemble na validação inteira (para testar.py ler tau/limiar do mesmo jeito que os outros)
-    salvar_ensemble(melhor, prev, va, y, ia, lp_uniforme, args.testes)
+    salvar_ensemble(melhor, prev, va, y, ia, lp_uniforme, args.testes, args.nome)
 
 
-def salvar_ensemble(melhor, prev, va, y, ia, lp_uniforme, testes):
+def salvar_ensemble(melhor, prev, va, y, ia, lp_uniforme, testes, nome="E5_ensemble"):
     sub = melhor["membros"].split("+")
     metodo = melhor["metodo"]
     taus = {rid: escolher_tau(prev[rid][0][ia], y[ia], prev[rid][1]) for rid in sub}
@@ -137,11 +138,11 @@ def salvar_ensemble(melhor, prev, va, y, ia, lp_uniforme, testes):
         if suf == "":
             tau = escolher_tau(p[ia], y[ia], lp_uniforme)
             lim = limiar_sens(np.isin(y[ia], MAL_IDX), escore_maligno(p[ia]))
-            np.savez_compressed(PREV / "E5_ensemble.npz", isic_id=va["isic_id"].to_numpy(), p=p, y=y,
+            np.savez_compressed(PREV / f"{nome}.npz", isic_id=va["isic_id"].to_numpy(), p=p, y=y,
                                 log_prior=lp_uniforme, tau=tau, limiar=lim)
         else:
             ids = np.load(PREV / f"{sub[0]}{suf}.npz", allow_pickle=True)["isic_id"]
-            np.savez_compressed(PREV / f"E5_ensemble{suf}.npz", isic_id=ids, p=p)
+            np.savez_compressed(PREV / f"{nome}{suf}.npz", isic_id=ids, p=p)
     print("Previsões do ensemble salvas em", PREV)
 
 

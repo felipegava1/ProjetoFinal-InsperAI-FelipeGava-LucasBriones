@@ -76,6 +76,33 @@ def refinados(t: optuna.Trial, epocas=(8, 15)):
     }
 
 
+def otimizacao(t: optuna.Trial, base: dict):
+    """Espaço da otimização final: arquitetura, resolução, lote e parâmetros próprios da família (fusão,
+    PanDerm) ficam como no vencedor; o resto varia numa faixa em volta do valor dele. Inclui o decaimento
+    de taxa por camada (layer_decay), que não tinha sido testado no ConvNeXt."""
+    c = dict(base)
+    lr = base["lr"]
+    c |= {
+        "lr": t.suggest_float("lr", lr / 2, lr * 2, log=True),
+        "wd": t.suggest_float("wd", 0.003, 0.1, log=True),
+        "epocas": t.suggest_int("epocas", 8, 16),
+        "aquecimento": t.suggest_int("aquecimento", 0, 2),
+        "perda": "focal",
+        "gamma": t.suggest_float("gamma", 1.5, 5.0),
+        "suavizacao": t.suggest_float("suavizacao", 0.0, 0.2),
+        "aug": t.suggest_categorical("aug", ["leve", "media"]),
+        "mix_p": t.suggest_float("mix_p", 0.0, 0.5),
+        "mix_tipo": t.suggest_categorical("mix_tipo", ["mixup", "cutmix"]),
+        "dropout": t.suggest_float("dropout", 0.05, 0.5),
+        "drop_path": t.suggest_float("drop_path", 0.0, 0.3),
+        "layer_decay": t.suggest_float("layer_decay", 0.65, 1.0),
+        "max_nevos": t.suggest_categorical("max_nevos", [0, 6000]),
+        "cabeca_epocas": t.suggest_int("cabeca_epocas", 0, 1),
+        "paciencia": 3, "salvar_modelo": False,
+    }
+    return c
+
+
 def espaco(etapa, args):
     def fn(t: optuna.Trial):
         if etapa == "E0_busca":
@@ -113,6 +140,9 @@ def espaco(etapa, args):
                 c["emb"] = args.emb
                 c["emb_dropout"] = t.suggest_float("emb_dropout", 0.0, 0.6)
                 c["emb_norm"] = t.suggest_categorical("emb_norm", [True, False])
+        elif etapa == "OT":
+            # otimização final (v2): parte da configuração do melhor modelo e varia em volta dela
+            c = otimizacao(t, args.base_cfg)
         else:
             raise ValueError(etapa)
         c |= {"etapa": etapa, "seed": SEED, "rapido": args.rapido}
@@ -135,20 +165,29 @@ def objetivo(etapa, args):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("etapa", choices=["E0_busca", "E1", "E1r", "E2", "E2_384", "E3", "E4"])
+    ap.add_argument("etapa", choices=["E0_busca", "E1", "E1r", "E2", "E2_384", "E3", "E4", "OT"])
     ap.add_argument("--tentativas", type=int, default=30)
     ap.add_argument("--horas", type=float, default=None, help="limite de tempo da busca")
     ap.add_argument("--pesos-cnn", help="modelo final da E1 (.pt), ponto de partida do ramo ConvNeXt")
     ap.add_argument("--emb", help="vetores do PanDerm (.npz), para a E4")
     ap.add_argument("--rapido", action="store_true")
     ap.add_argument("--so-final", action="store_true")
+    ap.add_argument("--base", help="OT: id da rodada vencedora (ex.: E1_final_s42); a config sai de experimentos.csv")
+    ap.add_argument("--estudo", help="nome do estudo no optuna.db (padrão: a etapa)")
     args = ap.parse_args()
+    args.base_cfg = None
+    if args.etapa == "OT":
+        if not args.base:
+            ap.error("OT precisa de --base")
+        import pandas as pd
+        args.base_cfg = json.loads(pd.read_csv(EXPERIMENTOS).set_index("id").loc[args.base, "config"])
+        args.base_cfg |= {"etapa": "OT", "seed": SEED, "paciencia": 3, "salvar_modelo": False}
     if args.etapa in ("E3", "E4") and not args.pesos_cnn:
         ap.error("E3/E4 precisam de --pesos-cnn (modelo final da E1)")
     if args.etapa == "E4" and not args.emb:
         ap.error("E4 precisa de --emb")
 
-    nome = args.etapa + ("_rapido" if args.rapido else "")
+    nome = (args.estudo or args.etapa) + ("_rapido" if args.rapido else "")
     # semente do sorteador = 42 + nº de tentativas já no estudo: ao retomar uma busca interrompida,
     # o TPE não repete as mesmas configurações iniciais (aconteceu na E0_busca, tentativas 0 e 2)
     try:
@@ -159,8 +198,16 @@ def main():
         study_name=nome, storage=DB, load_if_exists=True, direction="maximize",
         sampler=optuna.samplers.TPESampler(seed=SEED + ja, multivariate=True),
         # nas buscas refinadas (semeadas com configurações boas) o corte pode começar mais cedo
-        pruner=optuna.pruners.MedianPruner(n_startup_trials=3 if args.etapa in ("E1r", "E2_384") else 5,
+        pruner=optuna.pruners.MedianPruner(n_startup_trials=3 if args.etapa in ("E1r", "E2_384", "OT") else 5,
                                            n_warmup_steps=3))
+    if args.etapa == "OT" and not estudo.trials:
+        # 1ª tentativa = a própria config vencedora (mede o ponto de partida dentro do estudo)
+        b = args.base_cfg
+        estudo.enqueue_trial({k: b[k] for k in ("lr", "wd", "epocas", "aquecimento", "suavizacao", "aug", "mix_p",
+                                                "mix_tipo", "dropout", "drop_path", "max_nevos", "cabeca_epocas")}
+                             | {"gamma": min(max(b.get("gamma", 2.0), 1.5), 5.0),
+                                "layer_decay": max(b.get("layer_decay", 1.0), 0.65),
+                                "lr": b["lr"]})
     if not args.so_final:
         feitas = len([t for t in estudo.trials if t.state.is_finished()])
         faltam = max(0, args.tentativas - feitas)
