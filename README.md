@@ -36,9 +36,9 @@ git lfs install
 ```
 O Git LFS já vem com o Git para Windows; no Linux/macOS, instale o pacote `git-lfs` antes.
 
-**Clonar a branch com os pesos:**
+**Clonar o repositório (já vem com os pesos):**
 ```
-git clone -b dermatoscopia-pytorch https://github.com/felipegava1/ProjetoFinal-InsperAI-FelipeGava-LucasBriones
+git clone https://github.com/felipegava1/ProjetoFinal-InsperAI-FelipeGava-LucasBriones
 ```
 
 **Se o clone já foi feito sem o LFS**, os `.pt` vêm como arquivos de texto de ~130 bytes (os
