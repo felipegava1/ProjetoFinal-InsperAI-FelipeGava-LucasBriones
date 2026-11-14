@@ -655,3 +655,19 @@ Leitura:
 - Junção por atenção cruzada venceu, mas com só 1–2 tentativas por tipo de junção não dá para
   separar o efeito da junção do efeito do lr.
 - Próximo: E4 adiciona o vetor do PanDerm como terceiro ramo (3 h).
+
+---
+
+## 13/11 21:45 — Notebook de registro criado
+
+O plano pede um `notebook.ipynb` com uma seção por modelo; até aqui o registro estava no DIARIO.md,
+em `experimentos.csv` e no `optuna.db`. Criado **`notebook_dermatoscopia.ipynb`** (o `notebook.ipynb`
+antigo, da versão TensorFlow, foi mantido), gerado por `scripts_dermato/gerar_notebook.py` a partir dos
+resultados salvos — não treina nada e roda sem imagens/GPU. Cada etapa tem as quatro partes do plano
+(como funciona; o que foi variado, com faixas e nº de tentativas; resultados com as 5 melhores, a
+vencedora, a evolução da busca e a importância dos parâmetros; o que funcionou e por quê) e a seção
+final "linha de raciocínio" junta tudo (tabela e gráfico dos finais, acerto por classe, matrizes de
+confusão E1 × E2 a 384 px). Funções de tabela/gráfico em `dermato/relatorio.py`; gráficos seguindo
+o guia de visualização (paleta validada, um eixo, pontos em vez de barras com eixo cortado, legenda
+fora da área de dados — conferidos visualmente depois de renderizar). Previsões de validação de todos
+os modelos finais copiadas para `resultados/previsoes/`. Regenerar quando E4/E5 terminarem.
