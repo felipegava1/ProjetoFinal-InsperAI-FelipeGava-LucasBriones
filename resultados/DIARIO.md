@@ -849,3 +849,53 @@ Resultados da v1 arquivados em `resultados/v1_com_vazamento/` (experimentos, pre
 os parâmetros foram escolhidos pelo Optuna numa validação com 12% de vazamento; refazer as 8 buscas levaria
 dias. Como o vazamento inflava todos os modelos quase igual, a escolha de parâmetros deve ter sido pouco
 afetada, mas isso não está provado.
+
+## 15/11 10:30 — Retreino v2 concluído, otimização da E1 e análise de erros
+
+**Retreino v2** (14/11 17:08 → 15/11 02:39, todas as 15 rodadas com código 0). Validação v2:
+
+| Etapa | bal_acc | spec95 | AUC mal | sementes |
+|---|---|---|---|---|
+| E0 | 0,696 | 0,659 | 0,930 | 1 |
+| E0_busca | 0,719 | 0,670 | 0,936 | 1 |
+| E1 | 0,754 ± 0,004 | 0,723 ± 0,008 | 0,943 | 3 |
+| E1r | 0,760 | 0,708 | 0,936 | 1 |
+| E2 224 | 0,740 | 0,660 | 0,933 | 1 |
+| E2_384 | 0,756 ± 0,012 | 0,667 ± 0,013 | 0,935 | 3 |
+| E3 | 0,752 ± 0,004 | 0,716 ± 0,010 | 0,940 | 3 |
+| E4 | 0,760 | 0,715 | 0,940 | 1 |
+| E5 (metade B) | 0,777 | 0,700 | 0,945 | — |
+
+Números perto da estimativa "v1 sem as vazadas". Novidade: a E2_384 perde 5,6 pontos de spec95 para a E1
+(na v1 empatavam).
+
+**Escolha do modelo a otimizar: E1, decidida por mim às 01:49, depois de ver os números.** A regra
+automática escolheria a E2_384 (0,756 × 0,754), mas 0,002 é muito menor que o ruído entre sementes (~1
+ponto). Desempatei por spec95 (0,723 × 0,667), AUC e custo (30 × 52 min por treino → ~10 × ~5 tentativas
+até 07:30). `otimizar_v2.py` ganhou `--vencedor` e foi relançado com `--vencedor E1`.
+
+**Busca OT_v2** (02:39 → 08:13, 17 tentativas, 13 cortadas). Tentativa 0 = a própria E1 (0,7575). Melhor:
+tentativa 2, **0,7734** (cutmix no lugar de mixup, augmentation média, gama 2, suavização 0,06, layer decay
+0,86, aquecimento 1, 10 épocas).
+**Com 3 sementes: 0,759 ± 0,012 × 0,754 ± 0,004 da E1 — empate.** As sementes 43/44 deram 0,752: o 0,773 era
+sorte de semente escolhida por ser a maior (maldição do vencedor). **spec95 piorou: 0,685 ± 0,011 × 0,723**
+(as 3 sementes abaixo de todas da E1); AUC mal 0,939 × 0,943. Ganhou em ECE (0,31 → 0,16), carcinoma
+espinocelular e F1/F2 macro. Conclusão: a configuração da E1 já estava perto do ótimo; mais busca de
+parâmetros não melhora o modelo individual.
+
+**E5_OT** (ensemble com o OT_v2 no lugar da E1; vencedor = média de E2_384 + E4 + OT_v2, metade B):
+bal_acc 0,782, spec95 0,723, AUC mel 0,949, AUC mal 0,947, ECE 0,041 — melhor que a E5 (0,777 / 0,700 / 0,945
+/ 0,052) em tudo, mas o membro OT_v2 é a semente escolhida na validação e o ganho em spec95 (+2,4) está perto do
+ruído da metade B.
+
+**Erros** (`python -m dermato.erros`; sementes em média; ensembles na validação inteira, um pouco otimistas):
+- F2 macro: E0 0,620, E1 0,702, OT_v2 0,721, E5 0,734, E5_OT 0,748.
+- Classes difíceis: ceratose actínica (F1 ~0,48–0,51), dermatofibroma (F1 0,40–0,56, precisão 0,27–0,43 com
+  45 casos), carcinoma espinocelular (0,56–0,61). Fáceis: nevo, basocelular, vascular.
+- Triagem a 95% de sensibilidade (erro tipo II ~5% por construção): **erro tipo I** E0 34,1%, **E1 27,7%**,
+  OT_v2 31,5%, E5 27,2%, E5_OT 27,7%.
+- Classe prevista maligna: tipo II E1 11,1%, E5 9,5%, E5_OT 10,2%; tipo I 16,6–17,9%.
+- Melanoma (classe prevista): tipo II ~21–22% (1 em 5 melanomas vira outra classe, ~60% deles nevo); tipo I ~8%.
+
+Notebook regenerado para a v2 (seções de repetidas, otimização e erros; tabelas das buscas E0–E4 lidas do
+arquivo v1). Candidatos para os testes: E0, E1 (3 sementes), E5 e E5_OT. Testes continuam fechados.

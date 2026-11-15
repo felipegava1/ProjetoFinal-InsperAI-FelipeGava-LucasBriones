@@ -47,6 +47,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--horas", type=float, help="duração da busca (padrão: até as 07:30)")
     ap.add_argument("--nao-esperar", action="store_true")
+    ap.add_argument("--vencedor", help="força a etapa a otimizar (ex.: E1)")
     a = ap.parse_args()
 
     if not a.nao_esperar:
@@ -70,6 +71,8 @@ def main():
     um = tab[(tab["n"] < 3) & (tab["bal_acc"] > tres["bal_acc"].iloc[0] + 0.01)]
     if len(um):
         vencedor = um.index[0]
+    if a.vencedor:
+        vencedor = a.vencedor
     base = f"{vencedor}_final_s42"
     print(f"[{agora()}] melhor modelo: {vencedor} (base {base})", flush=True)
 

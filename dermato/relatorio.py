@@ -39,6 +39,21 @@ def experimentos():
     return e
 
 
+V1 = REPO / "resultados" / "v1_com_vazamento" / "experimentos.csv"
+
+
+def _linhas_busca(nome):
+    """Linhas de experimentos de uma busca. As buscas E0–E4 rodaram na divisão v1 (antes da limpeza das
+    duplicatas): as tentativas delas estão no arquivo da v1. O estudo OT_v2 grava etapa "OT"."""
+    etapa = "OT" if nome.startswith("OT") else nome
+    e = experimentos()
+    e = e[(e["etapa"] == etapa) & e["trial"].notna()]
+    if not len(e) and V1.exists():
+        e = pd.read_csv(V1)
+        e = e[(e["etapa"] == etapa) & e["trial"].notna()]
+    return e
+
+
 def linha_final(rid):
     e = experimentos()
     return e[e["id"] == rid].iloc[-1]
@@ -70,10 +85,9 @@ def resumo_busca(nome, top=5):
     """Contagem de tentativas, tempo gasto, faixas, 5 melhores e configuração vencedora."""
     est = estudo(nome)
     estados = pd.Series([t.state.name for t in est.trials]).value_counts().to_dict()
-    e = experimentos()
-    e = e[(e["etapa"] == nome) & (e["status"] == "ok") & e["trial"].notna()]
-    e = e.drop_duplicates("trial", keep="last").set_index("trial")
-    tempo = experimentos().query("etapa == @nome")["tempo_treino_min"].sum()
+    todas = _linhas_busca(nome)
+    tempo = todas["tempo_treino_min"].sum()
+    e = todas[todas["status"] == "ok"].drop_duplicates("trial", keep="last").set_index("trial")
     print(f"Busca {nome}: {len(est.trials)} tentativas {estados} | tempo de GPU registrado: {tempo / 60:.1f} h")
     linhas = []
     for t in est.trials:
