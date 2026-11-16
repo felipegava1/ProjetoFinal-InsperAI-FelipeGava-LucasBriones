@@ -1,34 +1,62 @@
 # Projeto Final – InsperAI (Felipe Gava, Lucas Briones)
 
+Projeto acadêmico de apoio à triagem de lesões de pele: o resultado é sempre apoio à priorização (quem
+precisa de biópsia/encaminhamento primeiro), nunca um diagnóstico. Relatório da entrega intermediária
+em `relatorios/relatorio_intermediaria.pdf`.
+
+## Mapa do repositório
+
+O projeto passou por fases diferentes. **Comece pelo `notebook_dermatoscopia.ipynb`**, que é o trabalho atual.
+
+| Fase | Notebook | Código e resultados |
+|---|---|---|
+| **Atual**: classificador de dermatoscopia, E0 → E5 e otimização (PyTorch) | `notebook_dermatoscopia.ipynb` (gerado por `scripts_dermato/gerar_notebook.py`; não editar à mão) | `dermato/`, `scripts_dermato/`, `resultados/` (inclui o `DIARIO.md`), `splits/` |
+| v1: um único modelo para foto de celular e dermatoscopia (TensorFlow) | `notebook_v1_celular.ipynb` | `pipeline.py`, `prepare_data.py`, `scripts/`, `modelos/pintas/`, `data/processed/` |
+| Triagem de erupções, alergias e queimaduras (**pausada**) | `triagem_alergias/triagem_alergias.ipynb` | `triagem_alergias/` |
+| Treino no Kaggle (**arquivado, nunca executado**) | `arquivo/kaggle/kaggle_professor.ipynb` | `arquivo/kaggle/` (ver o README da pasta) |
+
 ## Classificador de dermatoscopia (PyTorch) — escopo atual
 
-> O projeto passou a focar só em **dermatoscopia** (ver o "Plano de iterações"). O código novo está
-> em `dermato/`; o restante deste README descreve a versão anterior (TensorFlow, foto de celular).
-> Resultado = apoio à priorização (quem precisa de biópsia/encaminhamento primeiro), nunca diagnóstico.
+O projeto passou a focar só em **dermatoscopia**. O código está em `dermato/`; as seções a partir de
+"Modelo v1" descrevem a fase anterior (TensorFlow, foto de celular).
 
-**Resultados na validação** (5.821 imagens, TTA 8; os testes T1/T2 ainda não foram abertos):
+**Resultados na validação** (divisão v2, sem imagens repetidas entre splits; 5.319 imagens, TTA 8,
+semente 42; os testes T1/T2 ainda não foram abertos):
 
 | Modelo | Resolução | Acurácia balanceada | Especificidade a 95% de sensibilidade | AUC melanoma |
 |---|---|---|---|---|
-| E0 — receita atual (EfficientNetV2-B0) | 224 | 0,696 | 0,689 | 0,912 |
-| E0_busca — B0 com parâmetros otimizados | 224 | 0,7345 | 0,703 | 0,917 |
-| **E1 — ConvNeXt-Tiny** | **384** | **0,769** | **0,773** | **0,933** |
+| E0 — receita do modelo v1 (EfficientNetV2-B0) | 224 | 0,696 | 0,659 | 0,920 |
+| E0_busca — B0 com parâmetros otimizados | 224 | 0,719 | 0,670 | 0,926 |
+| E1 — ConvNeXt-Tiny | 384 | 0,757 | 0,730 | 0,942 |
+| OT_v2 — E1 otimizada | 384 | 0,773 | 0,682 | 0,933 |
+| E5 — ensemble (E2 a 384 px + E4) + temperatura\* | — | 0,777 | 0,700 | 0,947 |
+| **E5_OT — ensemble (E2 a 384 px + E4 + OT_v2) + temperatura\*** | — | **0,782** | **0,723** | **0,949** |
+
+\* Ensembles ajustados na metade A da validação e avaliados na metade B. As médias de 3 sementes dos
+finalistas e a análise de erros (F1/F2, tipo I/II) estão no notebook. Os números da divisão v1, que
+tinha imagens repetidas entre splits e inflava a validação em 1–2,6 pontos, estão arquivados em
+`resultados/v1_com_vazamento/`.
 
 Raciocínio, mudanças e números de cada etapa: `resultados/DIARIO.md`; uma linha por treino em
 `resultados/experimentos.csv`; todas as tentativas das buscas em `resultados/optuna.db`.
 
 ### Pesos dos modelos e Git LFS
 
-Os arquivos de pesos (`resultados/modelos/*.pt`, de 23 a 107 MB) são grandes demais para o git
+Os arquivos de pesos (`resultados/modelos/*.pt`, de 24 a 232 MB) são grandes demais para o git
 comum (o GitHub recusa arquivos acima de 100 MB). Por isso eles ficam no **Git LFS** (Large File
 Storage): o repositório guarda só um "ponteiro" de poucos bytes e o arquivo de verdade fica no
 armazenamento LFS do GitHub, baixado junto com o clone.
 
 | Arquivo | Tamanho | Modelo |
 |---|---|---|
-| `E0_final_s42.pt` | 23 MB | E0, receita atual (EfficientNetV2-B0, 224 px) |
-| `E0_busca_final_s42.pt` | 23 MB | E0 com parâmetros otimizados |
-| `E1_final_s42.pt` | 107 MB | E1, ConvNeXt-Tiny 384 px (melhor modelo) |
+| `E0_final_s42.pt` | 24 MB | E0, receita do modelo v1 (EfficientNetV2-B0, 224 px) |
+| `E0_busca_final_s42.pt` | 24 MB | E0 com parâmetros otimizados |
+| `E1_final_s42.pt`, `_s43.pt`, `_s44.pt` | 111 MB cada | E1, ConvNeXt-Tiny 384 px (3 sementes; a s42 é o padrão do `prever.py`) |
+| `E2_384_final_s42.pt` | 122 MB | E2, MaxViT-Tiny 384 px (membro dos ensembles) |
+| `E4_final_s42.pt` | 232 MB | E4, fusão ConvNeXt + Swin + PanDerm (membro dos ensembles) |
+| `OT_v2_final_s42.pt` | 111 MB | OT_v2, E1 otimizada (membro do E5_OT) |
+
+Os pesos da divisão v1 (E0, E0_busca e E1) ficam em `resultados/v1_com_vazamento/modelos/`, também no LFS.
 
 **Antes de clonar (uma vez por computador):**
 ```
@@ -48,15 +76,15 @@ git lfs install
 git lfs pull
 ```
 
-**Conferir se os pesos estão íntegros:** `git lfs ls-files` lista os três arquivos; os códigos devem
-bater com `resultados/modelos_sha256.txt` (no Windows: `certutil -hashfile resultados\modelos\E1_final_s42.pt SHA256`).
+**Conferir se os pesos estão íntegros:** `git lfs ls-files` lista os arquivos (8 da v2 e 3 da v1); os
+códigos devem bater com `resultados/modelos_sha256.txt`, que também traz os de pesos não versionados (no Windows: `certutil -hashfile resultados\modelos\E1_final_s42.pt SHA256`).
 
-**Cota:** a conta gratuita do GitHub tem 1 GB de armazenamento e 1 GB de download por mês para
-arquivos LFS (do dono do repositório). Os três pesos somam ~153 MB, ou seja, cerca de 6 clones
-completos por mês. Para clonar sem baixar os pesos: `GIT_LFS_SKIP_SMUDGE=1 git clone ...`
+**Cota:** o armazenamento e o download de arquivos LFS contam na cota do dono do repositório no
+GitHub (Settings → Billing). Os 11 pesos somam ~1 GB, e cada clone completo baixa tudo isso.
+Para clonar sem baixar os pesos: `GIT_LFS_SKIP_SMUDGE=1 git clone ...`
 (no PowerShell: `$env:GIT_LFS_SKIP_SMUDGE=1` antes do clone).
 
-**Adicionar um modelo novo** (ex.: depois de treinar a E2): copie o `.pt` para `resultados/modelos/`
+**Adicionar um modelo novo**: copie o `.pt` para `resultados/modelos/`
 e faça `git add` normalmente — o `.gitattributes` já manda todo `resultados/modelos/*.pt` para o LFS.
 
 ### Usar um modelo treinado (sem as bases de dados)
@@ -91,9 +119,9 @@ Os dados vão para `DERMATO_DATA` (padrão `F:\dermato\data`) e os resultados pa
 CNN + Swin) → E4 (+ PanDerm) → E5 (ensemble). Os testes T1/T2 só são abertos com
 `python -m dermato.testar`, nos finalistas.
 
-Projeto acadêmico de apoio à triagem de lesões de pele; o resultado é sempre uma sugestão ou
-orientação, nunca um diagnóstico. Todo o trabalho (código e texto) está no `notebook.ipynb`, e o
-relatório completo em `relatorios/relatorio_projeto.pdf`.
+## Modelo v1 (TensorFlow, foto de celular) — fase anterior
+
+O trabalho desta fase (código e texto) está no `notebook_v1_celular.ipynb`.
 
 Um **único modelo de pintas** (EfficientNetV2-B0, 224 px, com idade, sexo e região do corpo) atende
 foto de celular e dermatoscopia. A ideia central: ensinar a rede a reconhecer lesões em foto de celular
@@ -107,7 +135,7 @@ celular (`pipeline.simular_celular`).
 
 A triagem de erupções, alergias e queimaduras está **pausada** e separada em `triagem_alergias/`.
 
-## Preparando a base de dados
+### Preparando a base de dados
 
 As imagens (~17 GB) ficam só no seu PC, fora do repositório e fora do OneDrive.
 
@@ -130,7 +158,7 @@ As imagens (~17 GB) ficam só no seu PC, fora do repositório e fora do OneDrive
    `LESOES_DIR` com esse caminho, para que o notebook a encontre.
 4. Depois de pronto, os arquivos baixados podem ser apagados.
 
-### Estrutura gerada
+#### Estrutura gerada
 
 ```
 lesoes_pele/
@@ -151,15 +179,15 @@ lesoes_pele/
   (`site`, nas 8 regiões do ISIC 2019) e, só para o HAM, `dx_type` e `dataset`.
 - A imagem `ISIC_0035068` está no gabarito do ISIC 2018 mas não vem no zip, por isso é descartada.
 
-### Usando no notebook
+#### Usando no notebook
 
 ```python
 from prepare_data import load_labels, CLASSES
 df = load_labels()  # DataFrame com caminhos absolutos
 ```
 
-O `notebook.ipynb` já carrega a base e monta os datasets do TensorFlow na primeira seção.
-O carregamento em `tf.data` fica em `pipeline.py`, o mesmo código usado no Kaggle.
+O `notebook_v1_celular.ipynb` já carrega a base e monta os datasets do TensorFlow na primeira seção.
+O carregamento em `tf.data` fica em `pipeline.py`.
 
 ### Modelo
 
@@ -180,7 +208,7 @@ guia. Retreinar exige a base ampliada (seção seguinte) e leva cerca de 2,5 h n
 uv run scripts/treinar_simulando_celular.py --conjunto dermatoscopia+fotos
 ```
 
-## Bases de dados ampliadas (fotos de celular)
+### Bases de dados ampliadas (fotos de celular)
 
 O uso final é em foto de celular, então além do ISIC 2019/2018 baixamos as outras bases públicas
 com rótulo, inclusive as de foto comum. As imagens (~54 GB brutos, 483 mil arquivos) ficam **fora
@@ -229,65 +257,7 @@ Os scripts `testar_modelo.py` (avalia um `.keras` em qualquer base do manifesto,
 origem) e `treinar_simulando_celular.py` (treino do modelo) usam esse manifesto e as imagens em
 `imagens_256/`.
 
-## Treinando no Kaggle (arquiteturas maiores)
+### Treino no Kaggle (arquivado)
 
-Caminho alternativo, ainda sem a simulação de celular: serve para testar redes maiores na GPU grátis do
-Kaggle (~30 h/semana), a partir do ISIC 2019. O modelo do projeto não saiu daqui. As imagens de
-treino/validação vêm do dataset público
-[andrewmvd/isic-2019](https://www.kaggle.com/datasets/andrewmvd/isic-2019); o resto sobe como
-dois datasets privados.
-
-1. **Conta**: crie uma conta no Kaggle e verifique o telefone (Settings → Phone verification),
-   necessário para usar GPU e Internet nos notebooks.
-2. **Pacotes**: com a base local pronta, rode
-   ```
-   python kaggle_package.py SEU_USUARIO_KAGGLE
-   ```
-   Isso cria em `~/datasets/kaggle/`:
-   - `lesoes-pele-meta/`: `labels.csv`, `md5.csv` e o código (`prepare_data.py`, `pipeline.py`)
-   - `lesoes-pele-extra/`: imagens de `test/` e `unlabeled/` (~3,8 GB)
-3. **Upload** (os datasets são criados como privados):
-   ```
-   pip install kaggle
-   kaggle datasets create -p ~/datasets/kaggle/lesoes-pele-meta
-   kaggle datasets create -p ~/datasets/kaggle/lesoes-pele-extra --dir-mode zip
-   ```
-   O `kaggle` precisa do token da API: Kaggle → Settings → API → *Create New Token*, e salve o
-   `kaggle.json` em `C:\Users\<usuario>\.kaggle\`. Como alternativa, dá para subir as pastas pelo
-   site (Datasets → New Dataset).
-4. **Notebook**: no Kaggle, Create → New Notebook → File → *Import Notebook* →
-   `kaggle_professor.ipynb`. Em Settings, escolha *Accelerator: GPU T4 x2* e ligue *Internet*; em
-   *Add Input*, anexe `andrewmvd/isic-2019`, `lesoes-pele-meta` e `lesoes-pele-extra`.
-   A seção Dados confere se todas as imagens foram encontradas e se são idênticas às locais (md5).
-5. **Mudou o código?** Se `prepare_data.py` ou `pipeline.py` mudarem, rode o passo 2 de novo e
-   publique uma nova versão: `kaggle datasets version -p ~/datasets/kaggle/lesoes-pele-meta -m "descrição"`.
-
-### Treinando o professor
-
-O `kaggle_professor.ipynb` treina um ou mais professores (`MODELS`, na seção Modelo professor),
-avalia no teste e exporta modelo e previsões. Use **Save Version → Save & Run All**, que roda em
-segundo plano (até 12 h por execução) e guarda tudo na aba Output.
-
-| Professor | Arquitetura | Tempo estimado (T4 x2) |
-|---|---|---|
-| `effv2s` | EfficientNetV2-S, 384 px | ~2 h |
-| `effb4` | EfficientNet-B4, 380 px | ~3 h |
-| `effv2m` | EfficientNetV2-M, 384 px | ~4 h |
-| `convnext_s` | ConvNeXt-Small, 384 px | ~5 h |
-
-Roteiro sugerido:
-1. Rode com `MODELS = ["effv2s"]` (o padrão). Isso valida tudo de ponta a ponta e já dá o primeiro professor.
-2. Para o **ensemble**, rode novas versões com os outros professores (ex.: `MODELS = ["convnext_s"]`)
-   e, em *Add Input*, anexe o **output das versões anteriores** (Your Work → Notebooks). A seção
-   Teste encontra todos os `probs.npz`, avalia cada professor e a média deles, e escolhe o melhor
-   pela validação.
-3. Se faltar memória na GPU (erro OOM), reduza o `batch` do professor em `BACKBONES`; se der erro
-   de `MirroredStrategy`, use `MULTI_GPU = False`.
-
-O output de cada versão traz `<professor>/melhor.keras` (modelo), `<professor>/probs.npz`
-(probabilidades com TTA de todos os splits), as curvas de treino, `resultados.csv` e
-`ensemble_probs.npz` (probabilidades do melhor, para a destilação do aluno).
-
-Para testar o notebook no PC antes de subir (poucas imagens, resolução baixa, uma época), rode-o
-com as variáveis de ambiente `SMOKE_TEST=1`, `KAGGLE_INPUT` (pasta com os três datasets),
-`KAGGLE_WORKING` e `CACHE_DIR`.
+Nesta fase também foi preparado um caminho para treinar redes maiores na GPU do Kaggle, que nunca
+chegou a rodar. Ele ficou em `arquivo/kaggle/`, com a explicação no README da pasta.

@@ -7,8 +7,8 @@
 As imagens de treino/validação vêm do dataset público andrewmvd/isic-2019; o md5.csv permite
 ao notebook do Kaggle conferir que são os mesmos arquivos usados aqui.
 
-Uso:
-    python kaggle_package.py USUARIO_KAGGLE [DESTINO]
+Uso (a partir da raiz do repositório):
+    python arquivo/kaggle/kaggle_package.py USUARIO_KAGGLE [DESTINO]
 DESTINO padrão: ~/datasets/kaggle. As imagens entram como hard links (não ocupam espaço extra).
 """
 import hashlib
@@ -20,9 +20,11 @@ from pathlib import Path
 
 import pandas as pd
 
-from prepare_data import DEFAULT_DIR
+# arquivado em arquivo/kaggle/: o código empacotado (prepare_data.py, pipeline.py) fica na raiz
+REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO))
+from prepare_data import DEFAULT_DIR  # noqa: E402
 
-REPO = Path(__file__).resolve().parent
 CODE = ["prepare_data.py", "pipeline.py"]
 # diagnósticos de dermatologistas no teste do ISIC 2018 (Tschandl et al., 2020), para comparação
 READERS_CSV = Path(os.environ.get(
