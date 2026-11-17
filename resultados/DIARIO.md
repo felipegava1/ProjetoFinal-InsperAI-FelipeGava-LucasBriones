@@ -899,3 +899,28 @@ ruído da metade B.
 
 Notebook regenerado para a v2 (seções de repetidas, otimização e erros; tabelas das buscas E0–E4 lidas do
 arquivo v1). Candidatos para os testes: E0, E1 (3 sementes), E5 e E5_OT. Testes continuam fechados.
+
+## 16/11 — Testes T1 e T2 abertos (uma única vez)
+
+A pedido do Lucas, depois de fechados os finalistas. `python -m dermato.testar prever` em E0, E1 ×3, E2_384,
+E4 e OT_v2 (s42); ensembles aplicados ao teste com membros/método/temperatura da validação
+(`scripts_dermato/ensemble_testes.py`, nada reescolhido); `testar relatorio --base E0_final_s42`.
+Saídas: `testes.csv`, `bootstrap.csv`, `dermatologistas.csv`, previsões `*_t1/_t2.npz`.
+
+| Modelo | val | T1 bal | T1 spec95 | T2 bal | T2 spec95 | T2 ECE |
+|---|---|---|---|---|---|---|
+| E0 | 0,696 | 0,813 | 0,740 | 0,623 | 0,513 | 0,070 |
+| E1 (3 sementes) | 0,754 | 0,859 ± 0,011 | 0,820 ± 0,027 | 0,699 ± 0,021 | 0,596 | 0,280 |
+| OT_v2 s42 | 0,773 | 0,828 | 0,759 | 0,696 | 0,560 | 0,156 |
+| E5 | 0,777 | 0,861 | 0,807 | 0,743 | 0,601 | 0,044 |
+| E5_OT | 0,782 | 0,859 | 0,815 | 0,741 | 0,610 | 0,031 |
+
+- Ordem mantida: todos > E0 em bal_acc com IC 95% fora do zero, exceto OT_v2 no T1.
+- T1 acima da validação (7 classes, sem scc, mesma origem HAM10000); T2 abaixo, spec95 ~0,60.
+- Ensembles × cada semente da E1: T2 +2,4 a +6,7 pontos (significativo); T1 empate; spec95 empate.
+- OT_v2 s42 (melhor tentativa da busca) foi a pior finalista no T1: confirma a maldição do vencedor.
+- Limiar de triagem da validação deu sensibilidade 92–96% (T1) e 94–95% (T2).
+- Dermatologistas sem IA (Tschandl, 3.762 leituras do T1): bal_acc 0,714, sens 84%, espec 79%; todos os
+  modelos acima (E1 0,858, sens 94%, espec 82%; E5 0,859, espec 86%).
+
+Paper atualizado com a seção 9 (testes); PDF em `paper/paper_dermatoscopia.pdf`.
